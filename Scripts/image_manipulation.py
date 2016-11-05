@@ -5,7 +5,7 @@ from PIL import Image, ImageFilter, ImageEnhance
 import random
 
 # File string
-file_string = 'D:/Dropbox/Other/EarthArtAustralia/Australia/City/melbourne_white_highres.png'
+file_string = 'D:/Dropbox/EarthArtAustralia/Australia/City/melbourne_white_highres.png'
 
 
 # Low res ------------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ image_highres = Image.open(file_string)
 width, height = image_highres.size
 
 image_lowres = image_highres.copy()
-maxsize = (3000, 3000)
+maxsize = (2500, 3000)
 image_lowres.thumbnail(maxsize, Image.ANTIALIAS)
 image_lowres.save(file_string[:-12] + "_lowres.jpg")
 
@@ -36,7 +36,7 @@ if (width > height):
     image_frame = color.enhance(1.2)
 
     # Open frame and paste in image
-    etsy_frame = Image.open("D:/Dropbox/Other/EarthArtAustralia/Test/Elements/frame_hor_" + str(random.randint(1,5)) + ".png")
+    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_hor_" + str(random.randint(1,5)) + ".png")
     etsy_frame_overlay = etsy_frame.copy()
 
     etsy_frame.paste(image_frame, (158, 128), image_frame)
@@ -44,7 +44,7 @@ if (width > height):
     etsy_frame.save(file_string[:-12] + "_frame.jpg")
 
     # Add "new" banner
-    etsy_new = Image.open("D:/Dropbox/Other/EarthArtAustralia/Test/Elements/frame_new.png")
+    etsy_new = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_new.png")
     etsy_frame.paste(etsy_new, (0, 0), etsy_new)
     etsy_frame.save(file_string[:-12] + "_frame_new.jpg")
 
@@ -61,7 +61,7 @@ elif (width == height):
     image_frame = color.enhance(1.2)
 
     # Open frame and paste in image
-    etsy_frame = Image.open("D:/Dropbox/Other/EarthArtAustralia/Test/Elements/frame_sq_" + str(random.randint(1,5)) + ".png")
+    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_sq_" + str(random.randint(1,5)) + ".png")
     etsy_frame_overlay = etsy_frame.copy()
 
     etsy_frame.paste(image_frame, (215, 75), image_frame)
@@ -69,7 +69,7 @@ elif (width == height):
     etsy_frame.save(file_string[:-12] + "_frame.jpg")
 
     # Add "new" banner
-    etsy_new = Image.open("D:/Dropbox/Other/EarthArtAustralia/Test/Elements/frame_new.png")
+    etsy_new = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_new.png")
     etsy_frame.paste(etsy_new, (0, 0), etsy_new)
     etsy_frame.save(file_string[:-12] + "_frame_new.jpg")
 
