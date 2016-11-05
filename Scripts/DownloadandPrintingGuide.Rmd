@@ -1,0 +1,115 @@
+---
+author: "EarthArtAustralia"
+classoption: a4paper
+documentclass: article
+geometry: margin=1.7cm
+output: pdf_document
+params:
+  dropbox_dir: D:/Dropbox/Other/EarthArtAustralia
+  name: Every Road in Melbourne
+
+---
+
+---
+title: `r params$name`
+---
+
+```{r, include=FALSE}
+
+library(readxl)
+library(dplyr)
+
+# Define paper size function
+paper_size = function(pixels, DPI=300, tolerance=0.95){
+  
+  pixels_n = as.numeric(strsplit(pixels, " x ")[[1]])
+  inches = max(pixels_n) / DPI
+  cm = inches * 2.54
+  
+  if (cm > 141.4 * tolerance) {
+    paper_size = paste0("B0 size (1.0 x 1.4 m / 3.3 x 4.6 ft) at ~", DPI, 
+                        " DPI (A1 size or above is best to make out all of the smaller features)")
+    
+  } else if(cm > 118.9 * tolerance) {
+    paper_size = paste0("A0 size (84 x 119 cm / 33 x 47 in) at ~", DPI, 
+                        " DPI (A1 size or above is best to make out all of the smaller features)")
+    
+  } else if(cm > 100.0 * tolerance) {
+    paper_size = paste0("B1 size (71 x 100 cm / 28 x 39 in) at ~", DPI, " DPI (or larger at reduced resolution)")
+    
+  } else if(cm > 84.1 * tolerance) {
+    paper_size = paste0("A1 size (59 x 84 cm	/ 23 x 33 in) at ~", DPI, " DPI (or larger at reduced resolution)")
+    
+  } else { 
+    paper_size = "ERROR" }
+  
+  return(paper_size)
+  
+}
+
+
+# Import data file and subset to map name
+data_df = read_excel(paste0(params$dropbox_dir, "/Download links/DownloadandPrintingGuide_data.xlsx"))
+data_sub = filter(data_df, name == params$name)
+
+# Split download link string if multiple versions
+data_sub$download_link = gsub("dl=0", "dl=1", data_sub$download_link)
+links_n = strsplit(data_sub$download_link, split=";")[[1]]
+version_n = strsplit(data_sub$version, split=";")[[1]]
+
+# Multiple?
+multiple = length(links_n) > 1
+
+# Calculate image size in mb
+filesize = file.info(paste0(params$dropbox_dir, data_sub$file_link))$size
+filesize_mb = paste0(round(filesize / 1024 / 1024, 0),"mb")
+
+```
+
+```{r, out.width = "250px", echo = FALSE, fig.align='center'}
+library("png")
+knitr::include_graphics(paste0(params$dropbox_dir, data_sub$image_link))
+```
+
+## Download link 
+
+Thanks for purchasing `r params$name`! Due to Etsy's small upload limit, please download the `r data_sub$pixels` pixel, `r I(filesize_mb)` high resolution `r if( multiple ){ "maps" } else { "map" }` using the `r if( multiple ){ "links" } else { "link" }` below:
+
+`r if(!is.na(nchar(links_n[1]))){ paste0("### [>> Click here to download ", version_n[1], " via Dropbox <<](", links_n[1], ")") }`
+`r if(!is.na(nchar(links_n[2]))){ paste0("### [>> Click here to download ", version_n[2], " via Dropbox <<](", links_n[2], ")") }`
+`r if(!is.na(nchar(links_n[3]))){ paste0("### [>> Click here to download ", version_n[3], " via Dropbox <<](", links_n[3], ")") }`
+`r if(!is.na(nchar(links_n[4]))){ paste0("### [>> Click here to download ", version_n[4], " via Dropbox <<](", links_n[4], ")") }`
+`r if(!is.na(nchar(links_n[5]))){ paste0("### [>> Click here to download ", version_n[5], " via Dropbox <<](", links_n[5], ")") }`
+`r if(!is.na(nchar(links_n[6]))){ paste0("### [>> Click here to download ", version_n[6], " via Dropbox <<](", links_n[6], ")") }`
+`r if(!is.na(nchar(links_n[7]))){ paste0("### [>> Click here to download ", version_n[7], " via Dropbox <<](", links_n[7], ")") }`
+`r if(!is.na(nchar(links_n[8]))){ paste0("### [>> Click here to download ", version_n[8], " via Dropbox <<](", links_n[8], ")") }`
+
+## Printing tips
+
+Once you download, simply take the `r if( multiple ){ "files" } else { "file" }` along to your local print shop on a USB drive to get `r if( multiple ){ "them" } else { "it" }` printed! The `r if( multiple ){ "maps are" } else { "map is" }` suitable for printing out extremely large: up to `r paper_size(pixels = data_sub$pixels, DPI = 300)`. I recommend selecting a heavier semi-gloss/luster paper (150-250 gsm) for the best printing results!
+
+
+## Custom maps + please leave a review! ###
+
+If you have any questions at all about the data in the maps or printing, please don't hesitate to [contact me via Etsy](https://www.etsy.com/au/conversations/new?with_id=85706160). I also do custom maps for any part of the world, so send me a message if you have something in mind and I'll see what I can do! (depending on the data and time required, custom maps typically cost between $25 to $80 AUD)
+
+Finally, if you like the `r if( length(links_n) > 1 ){ "maps" } else { "map" }` I'd really love it if you could leave me a quick review on Etsy (click ["You > Purchases and Reviews"](https://www.etsy.com/au/your/purchases?ref=hdr_user_menu)). Send me a message if you do and I'll give you a **coupon for 50% off** any future orders! 
+
+Hope they look amazing on your wall!
+
+Robbi Bishop-Taylor  
+*EarthArtAustralia*
+
+**Etsy store:** <https://www.etsy.com/shop/EarthArtAustralia>  
+**Facebook page:** <https://www.facebook.com/EarthArtAustralia/>  
+**Instagram:** <https://www.instagram.com/EarthArtAustralia/>  
+**Pinterest:** <https://au.pinterest.com/EarthArtAus/>  
+  
+------
+  
+## About the `r if( length(links_n) > 1 ){ "maps" } else { "map" }`
+`r data_sub$map_desc`
+
+------
+
+All map prints copyright &copy; 2016 EarthArtAustralia; Robbi Bishop-Taylor. EarthArtAustralia's map prints are for personal use only; please do not redistribute or reproduce artworks commercially.
