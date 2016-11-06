@@ -1,11 +1,11 @@
 __author__ = 'z3287630'
 
-
-from PIL import Image, ImageFilter, ImageEnhance
+# Import modules
+from PIL import Image, ImageEnhance
 import random
 
 # File string
-file_string = 'D:/Dropbox/EarthArtAustralia/Australia/City/melbourne_white_highres.png'
+file_string = 'D:/Dropbox/EarthArtAustralia/Canada/City/calgary_white_highres.png'
 
 
 # Low res ------------------------------------------------------------------------------------
@@ -23,6 +23,7 @@ image_lowres.save(file_string[:-12] + "_lowres.jpg")
 
 # Frame --------------------------------------------------------------------------------------
 
+# Horizontal frames
 if (width > height):
 
     image_frame = image_highres.copy()
@@ -48,6 +49,7 @@ if (width > height):
     etsy_frame.paste(etsy_new, (0, 0), etsy_new)
     etsy_frame.save(file_string[:-12] + "_frame_new.jpg")
 
+# Square frames
 elif (width == height):
 
     image_frame = image_highres.copy()
@@ -73,6 +75,26 @@ elif (width == height):
     etsy_frame.paste(etsy_new, (0, 0), etsy_new)
     etsy_frame.save(file_string[:-12] + "_frame_new.jpg")
 
+# Vertical frames
+elif (width < height):
+
+    image_frame = image_highres.copy()
+    maxsize = (650, 1200)
+    image_frame.thumbnail(maxsize, Image.ANTIALIAS)
+
+    # Improve contrast
+    contrast = ImageEnhance.Contrast(image_frame)
+    image_frame = contrast.enhance(1.2)
+    color = ImageEnhance.Color(image_frame)
+    image_frame = color.enhance(1.2)
+
+    # Open frame and paste in image
+    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_vert_" + str(random.randint(1,5)) + ".png")
+    etsy_frame_overlay = etsy_frame.copy()
+
+    etsy_frame.paste(image_frame, (275, 150), image_frame)
+    etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
+    etsy_frame.save(file_string[:-12] + "_frame.jpg")
 
 
 # Subsets ------------------------------------------------------------------------------------
