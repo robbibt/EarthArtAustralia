@@ -5,7 +5,7 @@ documentclass: article
 geometry: margin=1.7cm
 output: pdf_document
 params:
-  dropbox_dir: D:/Dropbox/Other/EarthArtAustralia
+  dropbox_dir: D:/Dropbox/EarthArtAustralia
   name: Every Road in Melbourne
 
 ---
