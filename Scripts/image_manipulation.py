@@ -1,18 +1,26 @@
 __author__ = 'z3287630'
 
 # Import modules
+import os
+import random
+from xlutils.copy import copy
+from xlrd import open_workbook
 from PIL import Image, ImageEnhance, ImageCms, ImageOps
-import random, os
-import warnings; warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+import warnings
+warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+
+# Working directory
+os.chdir("D:/Dropbox/EarthArtAustralia/")
 
 
 # Setup and import ----------------------------------------------------------------------------------------------------
 
-file_string = 'D:/Dropbox/EarthArtAustralia/USA/nc_roads_highres.png'
-all_styles = True
-inset_zoom = 0.1
+file_string = 'Europe/norway_waterways250K_highres.png'
+map_name = 'Waterways of Norway'
+all_styles = False
+inset_zoom = 0.07
 all_styles_zoom = 1.1
-subsets = 15
+subsets = 50
 
 # Set up directory if does not exist
 if not os.path.exists(file_string[:-12]):
@@ -104,10 +112,8 @@ if width > height and not frame_exists:
     image_frame.thumbnail(maxsize, Image.ANTIALIAS)
 
     # Improve contrast
-    contrast = ImageEnhance.Contrast(image_frame)
-    image_frame = contrast.enhance(1.2)
-    color = ImageEnhance.Color(image_frame)
-    image_frame = color.enhance(1.2)
+    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.2)
+    image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
     etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_hor_" + str(random.randint(1,5)) + ".png")
@@ -130,10 +136,8 @@ elif width == height and not frame_exists:
     image_frame.thumbnail(maxsize, Image.ANTIALIAS)
 
     # Improve contrast
-    contrast = ImageEnhance.Contrast(image_frame)
-    image_frame = contrast.enhance(1.2)
-    color = ImageEnhance.Color(image_frame)
-    image_frame = color.enhance(1.2)
+    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.2)
+    image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
     etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_sq_" + str(random.randint(1,5)) + ".png")
@@ -157,13 +161,13 @@ elif width < height and not frame_exists:
 
     # Improve contrast
     image_frame = ImageEnhance.Contrast(image_frame).enhance(1.2)
-    image_frame = ImageEnhance.Color(image_frame).enhance(1.2)
+    image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
     etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_vert_" + str(random.randint(1,5)) + ".png")
     etsy_frame_overlay = etsy_frame.copy()
 
-    etsy_frame.paste(image_frame, (265, 150))
+    etsy_frame.paste(image_frame, (265, 135))
     etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
 
@@ -189,15 +193,49 @@ for zoom in range(2, subsets + 1):
     image_zoom.close()
 
 
+# Update Excel file ---------------------------------------------------------------------------------------------------
+
+# Load excel data
+rb = open_workbook("Download links/DownloadandPrintingGuide_data.xls")
+r = rb.sheet_by_index(0).nrows
+
+# Calculate image file size
+file_size = os.path.getsize(file_string) / 1024.0 / 1024.0
+
+# If current map not in sheet and above 20mb, add to excel
+if map_name not in rb.sheet_by_index(0).col_values(0) and file_size > 20:
+
+    # Append data to last row
+    wb = copy(rb)
+    s = wb.get_sheet(0)
+    s.write(r, 0, map_name)
+    s.write(r, 1, map_name)
+    s.write(r, 3, "/" + file_string)
+    s.write(r, 5, str(width) + " x " + str(height))
+
+    # Set column widths
+    s.col(0).width = 7000
+    s.col(1).width = 7000
+    s.col(2).width = 18000
+    s.col(3).width = 9700
+    s.col(4).width = 6500
+    s.col(5).width = 3800
+
+    # Save to excel document
+    wb.save('Download links/DownloadandPrintingGuide_data.xls')
+
+else:
+
+    print("No data added to excel")
+
+
 # Close files ---------------------------------------------------------------------------------------------------------
 
 image_highres.close()
 image_lowres.close()
 
 
-
-
-# # CMYK conversion ---------------------------------------------------------------------------------------------------
+# CMYK conversion ---------------------------------------------------------------------------------------------------
 #
 # image_cmyk = ImageCms.profileToProfile(image_highres,
 #                                         "D:/Dropbox/EarthArtAustralia/Scripts/ICC/RGB/AdobeRGB1998.icc",
@@ -208,9 +246,12 @@ image_lowres.close()
 #
 # # Improve contrast
 # c, m, y, k = image_cmyk.split()
+# c = ImageEnhance.Brightness(c).enhance(1.2)
 # c = ImageEnhance.Contrast(c).enhance(0.9)
-# m = ImageEnhance.Contrast(m).enhance(4)
-# y = ImageEnhance.Contrast(y).enhance(3)
+# m = ImageEnhance.Contrast(m).enhance(2)
+# y = ImageEnhance.Contrast(y).enhance(1.4)
 #
 # image_cmyk_enhanced = Image.merge(image_cmyk.mode, (c,m,y,k))
-# image_cmyk_enhanced.save(file_string[:-12] + "_cmyk_test.tif",  compression="tiff_deflate")
+# image_cmyk_enhanced.save(file_string[:-12] + "_cmyk.tif",  compression="tiff_deflate")
+#
+# image_highres = Image.open(file_string[:-12] + "_cmyk.tif")
