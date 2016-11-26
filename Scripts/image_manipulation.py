@@ -15,12 +15,12 @@ os.chdir("D:/Dropbox/EarthArtAustralia/")
 
 # Setup and import ----------------------------------------------------------------------------------------------------
 
-file_string = 'Europe/norway_waterways250K_highres.png'
-map_name = 'Waterways of Norway'
+file_string = 'Australia/australia_shadow_highres.png'
+map_name = 'Shadow lands Australia'
 all_styles = False
-inset_zoom = 0.07
+inset_zoom = 0.3
 all_styles_zoom = 1.1
-subsets = 50
+subsets = 25
 
 # Set up directory if does not exist
 if not os.path.exists(file_string[:-12]):
@@ -175,10 +175,10 @@ elif width < height and not frame_exists:
 # Subsets -------------------------------------------------------------------------------------------------------------
 
 # Save middle inset
-image_zoom = image_highres.crop((int(width * 0.5 - width * 0.05),
-                                 int(height * 0.485 - height * 0.05),
-                                 int(width * 0.5 + width * 0.05),
-                                 int(height * 0.485 + height * 0.05)))
+image_zoom = image_highres.crop((int(width * 0.5 - width * (inset_zoom * 0.5)),
+                                 int(height * 0.485 - height * (inset_zoom * 0.5)),
+                                 int(width * 0.5 + width * (inset_zoom * 0.5)),
+                                 int(height * 0.485 + height * (inset_zoom * 0.5))))
 image_zoom.save(file_string[:-12] + "/" + file_name + "_zoom_1.jpg")
 
 # Save random insets
