@@ -91,19 +91,21 @@ if (file.exists(image_link)) {
 
 Thanks for purchasing `r params$name`! Due to Etsy's small upload limit, please download the `r data_sub$pixels` pixel, `r I(filesize_mb)` high resolution `r if( multiple ){ "maps" } else { "map" }` using the `r if( multiple ){ "links" } else { "link" }` below:
 
-`r if(!is.na(nchar(links_n[1]))){ paste0("### [>> Click here to download ", version_n[1], " via Dropbox <<](", links_n[1], ")") }`
-`r if(!is.na(nchar(links_n[2]))){ paste0("### [>> Click here to download ", version_n[2], " via Dropbox <<](", links_n[2], ")") }`
-`r if(!is.na(nchar(links_n[3]))){ paste0("### [>> Click here to download ", version_n[3], " via Dropbox <<](", links_n[3], ")") }`
-`r if(!is.na(nchar(links_n[4]))){ paste0("### [>> Click here to download ", version_n[4], " via Dropbox <<](", links_n[4], ")") }`
-`r if(!is.na(nchar(links_n[5]))){ paste0("### [>> Click here to download ", version_n[5], " via Dropbox <<](", links_n[5], ")") }`
-`r if(!is.na(nchar(links_n[6]))){ paste0("### [>> Click here to download ", version_n[6], " via Dropbox <<](", links_n[6], ")") }`
-`r if(!is.na(nchar(links_n[7]))){ paste0("### [>> Click here to download ", version_n[7], " via Dropbox <<](", links_n[7], ")") }`
-`r if(!is.na(nchar(links_n[8]))){ paste0("### [>> Click here to download ", version_n[8], " via Dropbox <<](", links_n[8], ")") }`
+`r if(!is.na(nchar(links_n[1]))){ paste0("### [>> Click here to download ", version_n[1], " <<](", links_n[1], ")") }`
+`r if(!is.na(nchar(links_n[2]))){ paste0("### [>> Click here to download ", version_n[2], " <<](", links_n[2], ")") }`
+`r if(!is.na(nchar(links_n[3]))){ paste0("### [>> Click here to download ", version_n[3], " <<](", links_n[3], ")") }`
+`r if(!is.na(nchar(links_n[4]))){ paste0("### [>> Click here to download ", version_n[4], " <<](", links_n[4], ")") }`
+`r if(!is.na(nchar(links_n[5]))){ paste0("### [>> Click here to download ", version_n[5], " <<](", links_n[5], ")") }`
+`r if(!is.na(nchar(links_n[6]))){ paste0("### [>> Click here to download ", version_n[6], " <<](", links_n[6], ")") }`
+`r if(!is.na(nchar(links_n[7]))){ paste0("### [>> Click here to download ", version_n[7], " <<](", links_n[7], ")") }`
+`r if(!is.na(nchar(links_n[8]))){ paste0("### [>> Click here to download ", version_n[8], " <<](", links_n[8], ")") }`
 
 ## Printing tips
 
 Once you download, simply take the `r if( multiple ){ "files" } else { "file" }` along to your local print shop on a USB drive to get `r if( multiple ){ "them" } else { "it" }` printed! The `r if( multiple ){ "maps are" } else { "map is" }` suitable for printing out extremely large: up to `r paper_size(pixels = data_sub$pixels, DPI = 300)`. I recommend selecting a heavier semi-gloss/luster paper (150-250 gsm) for the best printing results!
 
+`r if(any(grepl("CMYK", version_n))){ "**Print-optimised CMYK file:** This product also comes with a print-optimised .tif file of the 'Plasma' version of the map in the [CMYK color space](http://sploid.gizmodo.com/the-difference-between-rgb-and-cmyk-explained-1777830600). Even though the file may appear more washed out than the .png file you also recieved, printing shops often prefer this format as it typically results in improved printing results. I'd recommend bringing both Plasma .png and .tif versions along to the printer and see which they prefer!
+" }`
 
 ## Custom maps + please leave a review! ###
 
