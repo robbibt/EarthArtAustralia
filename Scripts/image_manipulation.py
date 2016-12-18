@@ -15,12 +15,15 @@ os.chdir("D:/Dropbox/EarthArtAustralia/")
 
 # Setup and import ----------------------------------------------------------------------------------------------------
 
-file_string = 'Australia/australia_shadow_highres.png'
-map_name = 'Shadow lands Australia'
-all_styles = False
-inset_zoom = 0.3
-all_styles_zoom = 1.1
-subsets = 25
+file_string = 'USA/utah_waterways_highres.png'
+map_name = 'Waterways of Utah'
+inset_zoom = 0.13
+subsets = 39
+
+three_styles = False
+three_styles_zoom = 1.1
+two_styles = False
+two_styles_zoom = 1
 
 # Set up directory if does not exist
 if not os.path.exists(file_string[:-12]):
@@ -42,13 +45,13 @@ image_lowres.thumbnail(maxsize, Image.ANTIALIAS)
 image_lowres.save(file_string[:-12] + "/" + file_name + "_lowres.jpg")
 
 
-# Optional: desaturate and invert -------------------------------------------------------------------------------------
+# Optional: three styles ----------------------------------------------------------------------------------------------
 
 # Only run if all frames requested and either black or all style frame doesn't exist
 desat_exists = os.path.isfile(file_string[:-12] + "_black_highres.png")
-styles_frame_exists = os.path.isfile(file_string[:-12] + "/" + file_name + "_frame_all.jpg")
+styles_frame_exists = os.path.isfile(file_string[:-12] + "/" + file_name + "_frame_three.jpg")
 
-if all_styles and (not desat_exists or not styles_frame_exists):
+if three_styles and (not desat_exists or not styles_frame_exists):
 
     # Remove color and increase contrast
     image_black = ImageEnhance.Color(image_highres).enhance(0)
@@ -71,7 +74,7 @@ if all_styles and (not desat_exists or not styles_frame_exists):
         image_white.save(file_string[:-12] + "_white_highres.png")
 
     # Resize into thumbnails
-    maxsize = (1200 * all_styles_zoom, 720 * all_styles_zoom)
+    maxsize = (1200 * three_styles_zoom, 720 * three_styles_zoom)
     image_plasma = image_highres.copy()
     image_plasma.thumbnail(maxsize, Image.ANTIALIAS)
     image_black.thumbnail(maxsize, Image.ANTIALIAS)
@@ -87,8 +90,8 @@ if all_styles and (not desat_exists or not styles_frame_exists):
                 pixdata[x, y] = (255, 255, 255, 0)
 
     # Paste into all style frame
-    height_adj = int((720 - 720 * all_styles_zoom) * 0.7)
-    all_styles_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_all_styles.png")
+    height_adj = int((720 - 720 * three_styles_zoom) * 0.7)
+    all_styles_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_three_styles.png")
     all_styles_frame.paste(image_white, (30, 100 + height_adj), image_white)
     all_styles_frame.paste(image_plasma, (980, 255 + height_adj), image_white)
     all_styles_frame.paste(image_black, (710, 820 + height_adj), image_white)
@@ -100,10 +103,66 @@ if all_styles and (not desat_exists or not styles_frame_exists):
     image_plasma.close()
 
 
+# Optional: two styles ----------------------------------------------------------------------------------------------
+
+# Only run if all frames requested and either black or all style frame doesn't exist
+black_exists = os.path.isfile(file_string[:-12] + "_black_highres.png")
+styles_frame_exists = os.path.isfile(file_string[:-12] + "/" + file_name + "_frame_two.jpg")
+
+if two_styles and (not black_exists or not styles_frame_exists):
+
+    # Convert to RGB if RGBA to allow invert
+    if image_highres.mode == 'RGBA':
+
+        r, g, b, a = image_highres.split()
+        rgb_image = Image.merge('RGB', (r,g,b))
+        inverted_image = ImageOps.invert(rgb_image)
+        r2, g2, b2 = inverted_image.split()
+        image_black = Image.merge('RGBA', (r2, g2, b2, a))
+        image_black = ImageEnhance.Contrast(image_black).enhance(1.4)
+        image_black.save(file_string[:-12] + "_black_highres.png")
+
+    # If already RGB
+    else:
+        image_black = ImageOps.invert(image_highres)
+        image_black = ImageEnhance.Contrast(image_black).enhance(1.4)
+        image_black.save(file_string[:-12] + "_black_highres.png")
+
+    # Resize into thumbnails
+    maxsize = (1200 * two_styles_zoom, 720 * two_styles_zoom)
+    image_white = image_highres.copy()
+    image_black.thumbnail(maxsize, Image.ANTIALIAS)
+    image_white.thumbnail(maxsize, Image.ANTIALIAS)
+
+    # Enhance
+    image_black = ImageEnhance.Contrast(image_black).enhance(1.4)
+    image_white = ImageEnhance.Contrast(image_white).enhance(1.4)
+
+    # Set to alpha in-place
+    image_white = image_white.convert("RGBA")
+    pixdata = image_white.load()
+
+    for y in xrange(image_white.size[1]):
+        for x in xrange(image_white.size[0]):
+            if pixdata[x, y] == (255, 255, 255, 255):
+                pixdata[x, y] = (255, 255, 255, 0)
+
+    # Paste into all style frame
+    height_adj = int((720 - 720 * two_styles_zoom) * 0.7)
+    all_styles_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_two_styles.png")
+    all_styles_frame.paste(image_white, (50, 100 + height_adj), image_white)
+    all_styles_frame.paste(image_black, (1060, 700 + height_adj), image_white)
+    all_styles_frame.save(file_string[:-12] + "/" + file_name + "_frame_two.jpg")
+
+    # Close files
+    image_black.close()
+    image_white.close()
+
+
 # Frame ---------------------------------------------------------------------------------------------------------------
 
 # Horizontal frames
-frame_exists = os.path.isfile(file_string[:-12] + "/" + file_name + "_frame.jpg")
+frame_exists = False # os.path.isfile(file_string[:-12] + "/" + file_name + "_frame.jpg")
 
 if width > height and not frame_exists:
 
@@ -128,6 +187,12 @@ if width > height and not frame_exists:
     etsy_frame.paste(etsy_new, (0, 0), etsy_new)
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_new.jpg")
 
+    # Add "ultra" banner
+    if height > 19999 or width > 19999:
+        etsy_ultra = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_ultra.png")
+        etsy_frame.paste(etsy_ultra, (0, 0), etsy_ultra)
+        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ultra.jpg")
+
 # Square frames
 elif width == height and not frame_exists:
 
@@ -151,6 +216,12 @@ elif width == height and not frame_exists:
     etsy_new = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_new.png")
     etsy_frame.paste(etsy_new, (0, 0), etsy_new)
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_new.jpg")
+
+    # Add "ultra" banner
+    if height > 19999 or width > 19999:
+        etsy_ultra = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_ultra.png")
+        etsy_frame.paste(etsy_ultra, (0, 0), etsy_ultra)
+        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ultra.jpg")
 
 # Vertical frames
 elif width < height and not frame_exists:
@@ -223,6 +294,7 @@ if map_name not in rb.sheet_by_index(0).col_values(0) and file_size > 20:
 
     # Save to excel document
     wb.save('Download links/DownloadandPrintingGuide_data.xls')
+    print("Added data to excel!")
 
 else:
 
