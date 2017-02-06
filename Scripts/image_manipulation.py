@@ -15,15 +15,15 @@ os.chdir("D:/Dropbox/EarthArtAustralia/")
 
 # Setup and import ----------------------------------------------------------------------------------------------------
 
-file_string = 'USA/utah_waterways_highres.png'
-map_name = 'Waterways of Utah'
-inset_zoom = 0.13
-subsets = 39
+file_string = 'Australia/nwqld_waterways_highres.png'
+map_name = 'Streams of Arid Australia'
+inset_zoom = 0.35
+subsets = 30
 
 three_styles = False
 three_styles_zoom = 1.1
 two_styles = False
-two_styles_zoom = 1
+two_styles_zoom = 1.0
 
 # Set up directory if does not exist
 if not os.path.exists(file_string[:-12]):
@@ -34,6 +34,7 @@ file_name = os.path.basename(file_string[:-12])
 
 # Read image
 image_highres = Image.open(file_string)
+image_highres = image_highres.convert("RGBA")
 width, height = image_highres.size
 
 
