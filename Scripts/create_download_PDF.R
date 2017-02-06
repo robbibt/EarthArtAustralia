@@ -2,7 +2,7 @@ library(rmarkdown)
 
 # Set working directory and name
 setwd("D:/Dropbox/EarthArtAustralia/")
-name = "Shadowlands Wyoming"
+name = "Streams of Arid Australia"
 
 # Render R markdown file as PDF inside 'scripts' directory
 render("Scripts/DownloadandPrintingGuide.Rmd", "pdf_document", 
@@ -17,19 +17,22 @@ file.copy(from=from_name, to = to_name, overwrite = TRUE)
 unlink("Scripts/tex2pdf*", recursive = TRUE)
 file.remove(from_name)
 
+# Open resulting file
+shell.exec(paste0(getwd(), "/", to_name))
+
 # Create tags
 tags = function(name) {
   
-  suffix = c("map", "art", "poster", "print", "decor", "wall art", "wall decor", "gift idea", "map print", "map art")
+  suffix = c("map", "art", "poster")
   tag_list = paste(name, suffix, collapse = ', ')
-  tag_list = paste0(tag_list, ", map art, home decor")
+  tag_list = paste0(tag_list, ", home decor, map art, unique gift, map print, wall art, art print, gift idea")
   
   print(tag_list)
   writeClipboard(tag_list)
   
 }
 
-tags(name = "Idaho")
+tags(name = "North Carolina")
 tags(name = strsplit(name, split = " ")[[1]][3])
 
 
