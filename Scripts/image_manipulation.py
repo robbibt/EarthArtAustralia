@@ -5,7 +5,7 @@ import os
 import random
 from xlutils.copy import copy
 from xlrd import open_workbook
-from PIL import Image, ImageEnhance, ImageCms, ImageOps
+from PIL import Image, ImageEnhance, ImageCms, ImageOps, ImageFont, ImageDraw
 import warnings
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
@@ -15,15 +15,20 @@ os.chdir("D:/Dropbox/EarthArtAustralia/")
 
 # Setup and import ----------------------------------------------------------------------------------------------------
 
-file_string = 'Australia/nwqld_waterways_highres.png'
-map_name = 'Streams of Arid Australia'
-inset_zoom = 0.35
-subsets = 30
+file_string = 'Europe/bristol_city_highres.png'
+map_name = 'Waterways of Australia'
+inset_zoom = 0.13
+subsets = 60
+
+city = False
+city_name = "BRISTOL"
+coordinates = "51.455° N, 2.5879° W"
+
+two_styles = False
+two_styles_zoom = 0.87
 
 three_styles = False
 three_styles_zoom = 1.1
-two_styles = False
-two_styles_zoom = 1.0
 
 # Set up directory if does not exist
 if not os.path.exists(file_string[:-12]):
@@ -38,10 +43,68 @@ image_highres = image_highres.convert("RGBA")
 width, height = image_highres.size
 
 
+# Add titles and coordinates for city maps ----------------------------------------------------------------------------
+
+if city:
+
+    if width > height:
+
+        # Open horizontal overlay and paste over city image
+        city_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_hor_city.png")
+        city_frame_overlay = city_frame.convert("RGBA")
+        image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
+
+    elif height > width:
+
+        # Open vertical overlay and paste over city image
+        city_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_vert_city.png")
+        city_frame_overlay = city_frame.convert("RGBA")
+        image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
+
+    elif height == width:
+
+        # Open square overlay and paste over city image
+        city_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_sq_city.png")
+        city_frame_overlay = city_frame.convert("RGBA")
+        image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
+
+    # Set up layer for drawing
+    draw = ImageDraw.Draw(image_highres)
+
+    # Set up fonts
+    city_font = ImageFont.truetype("D:/Dropbox/EarthArtAustralia/Scripts/Fonts/ADAM_kerning.ttf", 800)
+    coords_font = ImageFont.truetype("D:/Dropbox/EarthArtAustralia/Scripts/Fonts/Abel-Regular.ttf", 370)
+    # city_font = ImageFont.truetype("D:/Dropbox/EarthArtAustralia/Scripts/Fonts/ADAM_kerning.ttf", 800*0.9)  # vertical with country names
+    # coords_font = ImageFont.truetype("D:/Dropbox/EarthArtAustralia/Scripts/Fonts/Abel-Regular.ttf", 370*0.9)  # vertical with country names
+
+    # Set up city and coordinate strings for plotting (using widths to centre)
+    city_width, city_height = draw.textsize(city_name, font=city_font)
+    coordinates_split = coordinates.replace("\xc2", "").split(", ")
+
+    if len(coordinates_split[0]) > len(coordinates_split[1]):
+        coordinates_split[1] = coordinates_split[1] + "  "
+
+    elif len(coordinates_split[0]) < len(coordinates_split[1]):
+        coordinates_split[0] = "  " + coordinates_split[0]
+
+    # Combine coordinate string and add zeroes to space around title, and between letters for kerning
+    coordinates = coordinates_split[0] + " " * (city_width / 140) + coordinates_split[1] + " "
+    # coordinates = coordinates_split[0] + " " * (city_width / 147) + coordinates_split[1] + " " # vertical with country names
+    coordinates = " ".join(coordinates)
+    coords_width, coords_height = draw.textsize(coordinates, font=coords_font)
+
+    # Add city name and coordinates
+    draw.text(((width-city_width)/2,(height - 1060)), city_name,(0, 0, 0), font=city_font)
+    draw.text(((width-coords_width)/2 + 50,(height - 960)), coordinates,(0, 0, 0), font=coords_font)
+
+    # Export to file
+    image_highres.save(file_string)
+
+
 # Low res -------------------------------------------------------------------------------------------------------------
 
 image_lowres = image_highres.copy()
-maxsize = (3000, 2500)
+maxsize = (2800, 2300)
 image_lowres.thumbnail(maxsize, Image.ANTIALIAS)
 image_lowres.save(file_string[:-12] + "/" + file_name + "_lowres.jpg")
 
@@ -172,11 +235,11 @@ if width > height and not frame_exists:
     image_frame.thumbnail(maxsize, Image.ANTIALIAS)
 
     # Improve contrast
-    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.2)
+    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.15)
     image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
-    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_hor_" + str(random.randint(1,5)) + ".png")
+    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_hor_" + str(random.randint(1,4)) + ".png")
     etsy_frame_overlay = etsy_frame.convert("RGBA")
 
     etsy_frame.paste(image_frame, (128, 128))
@@ -198,18 +261,18 @@ if width > height and not frame_exists:
 elif width == height and not frame_exists:
 
     image_frame = image_highres.copy()
-    maxsize = (777, 777)
+    maxsize = (781, 781)
     image_frame.thumbnail(maxsize, Image.ANTIALIAS)
 
     # Improve contrast
-    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.2)
+    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.15)
     image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
-    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_sq_" + str(random.randint(1,5)) + ".png")
+    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_sq_" + str(random.randint(1,4)) + ".png")
     etsy_frame_overlay = etsy_frame.copy()
 
-    etsy_frame.paste(image_frame, (215, 75))
+    etsy_frame.paste(image_frame, (216, 74))
     etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
 
@@ -228,18 +291,18 @@ elif width == height and not frame_exists:
 elif width < height and not frame_exists:
 
     image_frame = image_highres.copy()
-    maxsize = (666, 1200)
+    maxsize = (643, 1175)
     image_frame.thumbnail(maxsize, Image.ANTIALIAS)
 
     # Improve contrast
-    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.2)
+    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.15)
     image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
-    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_vert_" + str(random.randint(1,5)) + ".png")
+    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_vert_" + str(random.randint(1,4)) + ".png")
     etsy_frame_overlay = etsy_frame.copy()
 
-    etsy_frame.paste(image_frame, (265, 135))
+    etsy_frame.paste(image_frame, (277, 143))
     etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
 
@@ -247,20 +310,28 @@ elif width < height and not frame_exists:
 # Subsets -------------------------------------------------------------------------------------------------------------
 
 # Save middle inset
-image_zoom = image_highres.crop((int(width * 0.5 - width * (inset_zoom * 0.5)),
-                                 int(height * 0.485 - height * (inset_zoom * 0.5)),
-                                 int(width * 0.5 + width * (inset_zoom * 0.5)),
-                                 int(height * 0.485 + height * (inset_zoom * 0.5))))
+image_zoom = image_highres.crop((int(width * 0.5 - max(width, height) * (inset_zoom * 0.5)),
+                                 int(height * 0.485 - max(width, height) * (inset_zoom * 0.5)),
+                                 int(width * 0.5 + max(width, height) * (inset_zoom * 0.5)),
+                                 int(height * 0.485 + max(width, height) * (inset_zoom * 0.5))))
 image_zoom.save(file_string[:-12] + "/" + file_name + "_zoom_1.jpg")
 
+# Save bottom inset
+image_zoom = image_highres.crop((int(width * 0.5 - width * 0.2),
+                                 int(height - width * 0.3),
+                                 int(width * 0.5 + width * 0.2),
+                                 int(height)))
+image_zoom.thumbnail((3000, 2500), Image.ANTIALIAS)
+image_zoom.save(file_string[:-12] + "/" + file_name + "_zoom_2.jpg")
+
 # Save random insets
-for zoom in range(2, subsets + 1):
+for zoom in range(3, subsets + 1):
     x = random.randint(int(width * 0.2), int(width * 0.75))
     y = random.randint(int(height * 0.2), int(height * 0.75))
-    image_zoom = image_highres.crop((x - int(width * (inset_zoom * 0.5)),
-                                     y - int(height * (inset_zoom * 0.5)),
-                                     x + int(width * (inset_zoom * 0.5)),
-                                     y + int(height * (inset_zoom * 0.5))))
+    image_zoom = image_highres.crop((x - int(max(width, height) * (inset_zoom * 0.5)),
+                                     y - int(max(width, height) * (inset_zoom * 0.5)),
+                                     x + int(max(width, height) * (inset_zoom * 0.5)),
+                                     y + int(max(width, height) * (inset_zoom * 0.5))))
     image_zoom.save(file_string[:-12] + "/" + file_name + "_zoom_" + str(zoom) + ".jpg")
     image_zoom.close()
 
