@@ -19,7 +19,7 @@ unlink("Scripts/tex2pdf*", recursive = TRUE)
 file.remove(from_name)
 
 # Open resulting file
-shell.exec(to_name)
+shell.exec(paste0(getwd(), "/", to_name))
 
 # Create tags
 etsy_tags = function(name) {
