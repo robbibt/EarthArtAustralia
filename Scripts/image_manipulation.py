@@ -3,26 +3,35 @@ __author__ = 'z3287630'
 # Import modules
 import os
 import random
+import glob
 from xlutils.copy import copy
 from xlrd import open_workbook
 from PIL import Image, ImageEnhance, ImageCms, ImageOps, ImageFont, ImageDraw
 import warnings
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
+def colorise_image(src, black_color ="#FFFFFF", white_color ="#000000"):
+    src.load()
+    r, g, b, alpha = src.split()
+    gray = ImageOps.grayscale(src)
+    result = ImageOps.colorize(gray, black_color, white_color)
+    result.putalpha(alpha)
+    return result
+
 # Working directory
-os.chdir("D:/Dropbox/EarthArtAustralia/")
+os.chdir("D:/Google Drive/EarthArtAustralia/")
 
 
 # Setup and import ----------------------------------------------------------------------------------------------------
 
-file_string = 'Europe/bristol_city_highres.png'
-map_name = 'Waterways of Australia'
-inset_zoom = 0.13
-subsets = 60
+file_string = 'USA/dallas_city_highres.png'
+map_name = 'Every Road in Dallas'
+inset_zoom = 0.12
+subsets = 70
 
-city = False
-city_name = "BRISTOL"
-coordinates = "51.455° N, 2.5879° W"
+city = True
+city_name = "DALLAS"
+coordinates = "32.7767° N, 96.7970° W"
 
 two_styles = False
 two_styles_zoom = 0.87
@@ -107,6 +116,87 @@ image_lowres = image_highres.copy()
 maxsize = (2800, 2300)
 image_lowres.thumbnail(maxsize, Image.ANTIALIAS)
 image_lowres.save(file_string[:-12] + "/" + file_name + "_lowres.jpg")
+
+
+# Colors --------------------------------------------------------------------------------------------------------------
+
+output_canvas = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_nine_styles.png")
+
+color_parameters = [["#FFFFFF", "#000000", "",        0.648, 0.010, 0.088, "lowres"],
+                    ["#FFFFFF", "#000000", "",        0.320, 0.010, 0.695, "whiteonblack"],
+                    ["#FFFFFF", "#000099", "",        0.320, 0.339, 0.695, "whiteonblue"],
+                    ["#FFFFFF", "#990000", "",        0.320, 0.668, 0.695, "whiteonred"],
+                    ["#FFFFFF", "#006600", "",        0.320, 0.668, 0.388, "whiteongreen"],
+                    ["#006600", "#FFFFFF", "#000000", 0.155, 0.668, 0.235, "greenonwhite"],
+                    ["#990000", "#FFFFFF", "#000000", 0.155, 0.832, 0.235, "redonwhite"],
+                    ["#000099", "#FFFFFF", "#000000", 0.155, 0.832, 0.088, "blueonwhite"],
+                    ["#4d1b7b", "#FFFFFF", "#000000", 0.155, 0.668, 0.088, "purpleonwhite"]]
+
+if width > height:
+
+    # Horizontal arrangement
+    color_parameters = [["#000099", "#FFFFFF", "#000000", 0.320, 0.010, 0.088, "blueonwhite"],
+                        ["#FFFFFF", "#006600", "",        0.320, 0.339, 0.088, "whiteongreen"],
+                        ["#006600", "#FFFFFF", "#000000", 0.320, 0.668, 0.088, "greenonwhite"],
+                        ["#FFFFFF", "#000000", "",        0.320, 0.010, 0.392, "whiteonblack"],
+                        ["#FFFFFF", "#000000", "",        0.320, 0.339, 0.392, "lowres"],
+                        ["#FFFFFF", "#000099", "",        0.320, 0.668, 0.392, "whiteonblue"],
+                        ["#4d1b7b", "#FFFFFF", "#000000", 0.320, 0.010, 0.695, "purpleonwhite"],
+                        ["#FFFFFF", "#990000", "",        0.320, 0.339, 0.695, "whiteonred"],
+                        ["#990000", "#FFFFFF", "#000000", 0.320, 0.668, 0.695, "redonwhite"]]
+
+else:
+
+    # Vertical arrangement
+    color_parameters = [["#FFFFFF", "#000000", "",        0.440, 0.010, 0.092, "whiteonblack"],
+                        ["#4d1b7b", "#FFFFFF", "#000000", 0.440, 0.257, 0.092, "purpleonwhite"],
+                        ["#FFFFFF", "#006600", "",        0.440, 0.504, 0.092, "whiteongreen"],
+                        ["#000099", "#FFFFFF", "#000000", 0.440, 0.752, 0.092, "blueonwhite"],
+                        ["#990000", "#FFFFFF", "#000000", 0.440, 0.010, 0.542, "redonwhite"],
+                        ["#FFFFFF", "#000099", "",        0.440, 0.257, 0.542, "whiteonblue"],
+                        ["#006600", "#FFFFFF", "#000000", 0.440, 0.504, 0.542, "greenonwhite"],
+                        ["#FFFFFF", "#990000", "",        0.440, 0.752, 0.542, "whiteonred"]]
+
+for black_color, white_color, text_color, size, xdim, ydim, name in color_parameters:
+
+    # Set up directory if does not exist
+    if not os.path.exists(file_string[:-12] + "/Styles"):
+        os.makedirs(file_string[:-12] + "/Styles")
+
+    # Test if colored file exists either in image directory or 'Style' subdirectory
+    if len(glob.glob(file_string[:-12] + "/" + file_name + "_" + name + '.*') +
+           glob.glob(file_string[:-12] + "/Styles/" + file_name + "_" + name + '.*')) == 0:
+
+        # Add color to image
+        print("Generating '" + name + "'")
+        colorised = colorise_image(image_highres, black_color=black_color, white_color=white_color)
+
+        # Set city title to black and white
+        if len(text_color) > 0:
+
+            # Copy bottom of image, convert to greyscale then paste back
+            box = (0, (height - 1060), width, height)
+            region = colorised.crop(box)
+            region = colorise_image(region, black_color=text_color, white_color=white_color)
+            colorised.paste(region, box)
+
+        colorised.save(file_string[:-12] + "/Styles/" + file_name + "_" + name + ".png")
+
+    else:
+        # If file already exists, load from either image directory or 'Style' subdirectory
+        print("Loading '" + name + "' from file")
+        colorised = Image.open((glob.glob(file_string[:-12] + "/" + file_name + "_" + name + '.*') +
+                                glob.glob(file_string[:-12] + "/Styles/" + file_name + "_" + name + '.*'))[0])
+
+    # Resize color image according to parameters and paste into canvas
+    colorised.thumbnail((int(output_canvas.width * size), int(output_canvas.height * size)), Image.ANTIALIAS)
+    output_canvas.paste(colorised, (int(output_canvas.width * xdim), int(output_canvas.height * ydim)))
+
+    # Close
+    colorised.close()
+
+# Add to canvas
+output_canvas.save(file_string[:-12] + "/" + file_name + "_allstyles.png")
 
 
 # Optional: three styles ----------------------------------------------------------------------------------------------
@@ -310,10 +400,10 @@ elif width < height and not frame_exists:
 # Subsets -------------------------------------------------------------------------------------------------------------
 
 # Save middle inset
-image_zoom = image_highres.crop((int(width * 0.5 - max(width, height) * (inset_zoom * 0.5)),
-                                 int(height * 0.485 - max(width, height) * (inset_zoom * 0.5)),
-                                 int(width * 0.5 + max(width, height) * (inset_zoom * 0.5)),
-                                 int(height * 0.485 + max(width, height) * (inset_zoom * 0.5))))
+image_zoom = image_highres.crop((int(width * 0.500 - max(width, height) * (inset_zoom * 0.5)),
+                                 int(height * 0.49 - max(width, height) * (inset_zoom * 0.5)),  # 0.388
+                                 int(width * 0.500 + max(width, height) * (inset_zoom * 0.5)),
+                                 int(height * 0.49 + max(width, height) * (inset_zoom * 0.5))))
 image_zoom.save(file_string[:-12] + "/" + file_name + "_zoom_1.jpg")
 
 # Save bottom inset
@@ -326,8 +416,8 @@ image_zoom.save(file_string[:-12] + "/" + file_name + "_zoom_2.jpg")
 
 # Save random insets
 for zoom in range(3, subsets + 1):
-    x = random.randint(int(width * 0.2), int(width * 0.75))
-    y = random.randint(int(height * 0.2), int(height * 0.75))
+    x = random.randint(int(width * 0.2), int(width * 0.8))
+    y = random.randint(int(height * 0.2), int(height * 0.8))
     image_zoom = image_highres.crop((x - int(max(width, height) * (inset_zoom * 0.5)),
                                      y - int(max(width, height) * (inset_zoom * 0.5)),
                                      x + int(max(width, height) * (inset_zoom * 0.5)),
@@ -339,20 +429,18 @@ for zoom in range(3, subsets + 1):
 # Update Excel file ---------------------------------------------------------------------------------------------------
 
 # Load excel data
-rb = open_workbook("Download links/DownloadandPrintingGuide_data.xls")
+rb = open_workbook("D:/Dropbox/EarthArtAustralia/Download links/DownloadandPrintingGuide_data.xls")
 r = rb.sheet_by_index(0).nrows
 
-# Calculate image file size
-file_size = os.path.getsize(file_string) / 1024.0 / 1024.0
-
-# If current map not in sheet and above 20mb, add to excel
-if map_name not in rb.sheet_by_index(0).col_values(0) and file_size > 20:
+# If current map not in sheet, add to excel
+if map_name not in rb.sheet_by_index(0).col_values(0):
 
     # Append data to last row
     wb = copy(rb)
     s = wb.get_sheet(0)
     s.write(r, 0, map_name)
-    s.write(r, 1, map_name)
+    s.write(r, 1, map_name + " (black on white); " + map_name + " (eight other styles)")
+    s.write(r, 2, "https://drive.google.com/uc?export=download&id=")
     s.write(r, 3, "/" + file_string)
     s.write(r, 5, str(width) + " x " + str(height))
 
@@ -365,7 +453,7 @@ if map_name not in rb.sheet_by_index(0).col_values(0) and file_size > 20:
     s.col(5).width = 3800
 
     # Save to excel document
-    wb.save('Download links/DownloadandPrintingGuide_data.xls')
+    wb.save('D:/Dropbox/EarthArtAustralia/Download links/DownloadandPrintingGuide_data.xls')
     print("Added data to excel!")
 
 else:
