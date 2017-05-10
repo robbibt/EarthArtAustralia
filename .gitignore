@@ -1,0 +1,24 @@
+# Ignore directories
+Africa/
+Australia/
+Asia/
+Canada/
+Download links/
+Europe/
+Etsy/
+Experiments/
+NorthAmerica/
+nppBackup/
+NZ/
+Promotional/
+QGIS layer files/
+QGIS project files/
+SouthAmerica/
+Test/
+Tolkien/
+USA/
+WAP Artists_Robbi Bishop-Taylor/
+World/
+
+# Ignore file types
+*.Rhistory
