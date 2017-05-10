@@ -117,6 +117,10 @@ maxsize = (2800, 2300)
 image_lowres.thumbnail(maxsize, Image.ANTIALIAS)
 image_lowres.save(file_string[:-12] + "/" + file_name + "_lowres.jpg")
 
+# Instagram
+image_insta = ImageOps.expand(image_lowres, border=500, fill="#FFFFFF")
+image_insta.save(file_string[:-12] + "/" + file_name + "_insta.jpg")
+
 
 # Colors --------------------------------------------------------------------------------------------------------------
 
