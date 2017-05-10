@@ -5,8 +5,8 @@ documentclass: article
 geometry: margin=1.7cm
 output: pdf_document
 params:
-  dropbox_dir: D:/Dropbox/EarthArtAustralia
-  name: Rivers of Australia
+  dropbox_dir: blah
+  name: Every Road in Dallas
 
 ---
 
@@ -69,8 +69,8 @@ filesize_mb = paste0(round(filesize / 1024 / 1024, 0),"mb")
 ```{r, out.width = "250px", echo = FALSE, fig.align='center'}
 
 # Identify possible frame directory
-split_path = strsplit(data_sub$file_link, "/")[[1]] # split_path = strsplit("/Australia/melbourne_city_highres.png", "/")[[1]]
-image_link = paste0("D:/Dropbox/EarthArtAustralia", "/", split_path[2], "/", 
+split_path = strsplit(data_sub$file_link, "/")[[1]] 
+image_link = paste0(params$dropbox_dir, "/", split_path[2], "/", 
                     gsub("_highres.png", "", split_path[3]), "/", 
                     gsub("highres.png", "frame.jpg", split_path[3]))
 
