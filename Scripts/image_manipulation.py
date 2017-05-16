@@ -10,10 +10,13 @@ from PIL import Image, ImageEnhance, ImageCms, ImageOps, ImageFont, ImageDraw
 import warnings
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
-def colorise_image(src, black_color ="#FFFFFF", white_color ="#000000"):
+
+def colorise_image(src, black_color ="#FFFFFF", white_color ="#000000", contrast=1.0):
+
     src.load()
     r, g, b, alpha = src.split()
     gray = ImageOps.grayscale(src)
+    gray = ImageEnhance.Contrast(gray).enhance(contrast)
     result = ImageOps.colorize(gray, black_color, white_color)
     result.putalpha(alpha)
     return result
@@ -24,14 +27,17 @@ os.chdir("D:/Google Drive/EarthArtAustralia/")
 
 # Setup and import ----------------------------------------------------------------------------------------------------
 
-file_string = 'USA/dallas_city_highres.png'
-map_name = 'Every Road in Dallas'
-inset_zoom = 0.12
+file_string = 'Europe/moscow_city_highres.png'
+map_name = 'Buildings of Paris'
+inset_zoom = 0.11
 subsets = 70
 
-city = True
-city_name = "DALLAS"
-coordinates = "32.7767° N, 96.7970° W"
+city = False
+city_name = "PARIS"
+coordinates = "48.857° N, 2.3522° E"
+
+nine_styles = False
+color_scale = 0
 
 two_styles = False
 two_styles_zoom = 0.87
@@ -59,21 +65,21 @@ if city:
     if width > height:
 
         # Open horizontal overlay and paste over city image
-        city_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_hor_city.png")
+        city_frame = Image.open("Scripts/Elements/frame_hor_city.png")
         city_frame_overlay = city_frame.convert("RGBA")
         image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
 
     elif height > width:
 
         # Open vertical overlay and paste over city image
-        city_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_vert_city.png")
+        city_frame = Image.open("Scripts/Elements/frame_vert_city.png")
         city_frame_overlay = city_frame.convert("RGBA")
         image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
 
     elif height == width:
 
         # Open square overlay and paste over city image
-        city_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_sq_city.png")
+        city_frame = Image.open("Scripts/Elements/frame_sq_city.png")
         city_frame_overlay = city_frame.convert("RGBA")
         image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
 
@@ -81,10 +87,10 @@ if city:
     draw = ImageDraw.Draw(image_highres)
 
     # Set up fonts
-    city_font = ImageFont.truetype("D:/Dropbox/EarthArtAustralia/Scripts/Fonts/ADAM_kerning.ttf", 800)
-    coords_font = ImageFont.truetype("D:/Dropbox/EarthArtAustralia/Scripts/Fonts/Abel-Regular.ttf", 370)
-    # city_font = ImageFont.truetype("D:/Dropbox/EarthArtAustralia/Scripts/Fonts/ADAM_kerning.ttf", 800*0.9)  # vertical with country names
-    # coords_font = ImageFont.truetype("D:/Dropbox/EarthArtAustralia/Scripts/Fonts/Abel-Regular.ttf", 370*0.9)  # vertical with country names
+    city_font = ImageFont.truetype("Scripts/Fonts/ADAM_kerning.ttf", 800)
+    coords_font = ImageFont.truetype("Scripts/Fonts/Abel-Regular.ttf", 370)
+    # city_font = ImageFont.truetype("Scripts/Fonts/ADAM_kerning.ttf", 800*0.9)  # vertical with country names
+    # coords_font = ImageFont.truetype("Scripts/Fonts/Abel-Regular.ttf", 370*0.9)  # vertical with country names
 
     # Set up city and coordinate strings for plotting (using widths to centre)
     city_width, city_height = draw.textsize(city_name, font=city_font)
@@ -124,83 +130,90 @@ image_insta.save(file_string[:-12] + "/" + file_name + "_insta.jpg")
 
 # Colors --------------------------------------------------------------------------------------------------------------
 
-output_canvas = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_nine_styles.png")
+if nine_styles:
 
-color_parameters = [["#FFFFFF", "#000000", "",        0.648, 0.010, 0.088, "lowres"],
-                    ["#FFFFFF", "#000000", "",        0.320, 0.010, 0.695, "whiteonblack"],
-                    ["#FFFFFF", "#000099", "",        0.320, 0.339, 0.695, "whiteonblue"],
-                    ["#FFFFFF", "#990000", "",        0.320, 0.668, 0.695, "whiteonred"],
-                    ["#FFFFFF", "#006600", "",        0.320, 0.668, 0.388, "whiteongreen"],
-                    ["#006600", "#FFFFFF", "#000000", 0.155, 0.668, 0.235, "greenonwhite"],
-                    ["#990000", "#FFFFFF", "#000000", 0.155, 0.832, 0.235, "redonwhite"],
-                    ["#000099", "#FFFFFF", "#000000", 0.155, 0.832, 0.088, "blueonwhite"],
-                    ["#4d1b7b", "#FFFFFF", "#000000", 0.155, 0.668, 0.088, "purpleonwhite"]]
+    output_canvas = Image.open("Scripts/Elements/frame_nine_styles.png")
 
-if width > height:
+    color_parameters = [["#FFFFFF", "#000000", "",        0.648, 0.010, 0.088, "lowres"],
+                        ["#FFFFFF", "#000000", "",        0.320, 0.010, 0.695, "whiteonblack"],
+                        ["#FFFFFF", "#000099", "",        0.320, 0.339, 0.695, "whiteonblue"],
+                        ["#FFFFFF", "#990000", "",        0.320, 0.668, 0.695, "whiteonred"],
+                        ["#FFFFFF", "#006600", "",        0.320, 0.668, 0.388, "whiteongreen"],
+                        ["#006600", "#FFFFFF", "#000000", 0.155, 0.668, 0.235, "greenonwhite"],
+                        ["#990000", "#FFFFFF", "#000000", 0.155, 0.832, 0.235, "redonwhite"],
+                        ["#000099", "#FFFFFF", "#000000", 0.155, 0.832, 0.088, "blueonwhite"],
+                        ["#4d1b7b", "#FFFFFF", "#000000", 0.155, 0.668, 0.088, "purpleonwhite"]]
 
-    # Horizontal arrangement
-    color_parameters = [["#000099", "#FFFFFF", "#000000", 0.320, 0.010, 0.088, "blueonwhite"],
-                        ["#FFFFFF", "#006600", "",        0.320, 0.339, 0.088, "whiteongreen"],
-                        ["#006600", "#FFFFFF", "#000000", 0.320, 0.668, 0.088, "greenonwhite"],
-                        ["#FFFFFF", "#000000", "",        0.320, 0.010, 0.392, "whiteonblack"],
-                        ["#FFFFFF", "#000000", "",        0.320, 0.339, 0.392, "lowres"],
-                        ["#FFFFFF", "#000099", "",        0.320, 0.668, 0.392, "whiteonblue"],
-                        ["#4d1b7b", "#FFFFFF", "#000000", 0.320, 0.010, 0.695, "purpleonwhite"],
-                        ["#FFFFFF", "#990000", "",        0.320, 0.339, 0.695, "whiteonred"],
-                        ["#990000", "#FFFFFF", "#000000", 0.320, 0.668, 0.695, "redonwhite"]]
+    if width > height:
 
-else:
-
-    # Vertical arrangement
-    color_parameters = [["#FFFFFF", "#000000", "",        0.440, 0.010, 0.092, "whiteonblack"],
-                        ["#4d1b7b", "#FFFFFF", "#000000", 0.440, 0.257, 0.092, "purpleonwhite"],
-                        ["#FFFFFF", "#006600", "",        0.440, 0.504, 0.092, "whiteongreen"],
-                        ["#000099", "#FFFFFF", "#000000", 0.440, 0.752, 0.092, "blueonwhite"],
-                        ["#990000", "#FFFFFF", "#000000", 0.440, 0.010, 0.542, "redonwhite"],
-                        ["#FFFFFF", "#000099", "",        0.440, 0.257, 0.542, "whiteonblue"],
-                        ["#006600", "#FFFFFF", "#000000", 0.440, 0.504, 0.542, "greenonwhite"],
-                        ["#FFFFFF", "#990000", "",        0.440, 0.752, 0.542, "whiteonred"]]
-
-for black_color, white_color, text_color, size, xdim, ydim, name in color_parameters:
-
-    # Set up directory if does not exist
-    if not os.path.exists(file_string[:-12] + "/Styles"):
-        os.makedirs(file_string[:-12] + "/Styles")
-
-    # Test if colored file exists either in image directory or 'Style' subdirectory
-    if len(glob.glob(file_string[:-12] + "/" + file_name + "_" + name + '.*') +
-           glob.glob(file_string[:-12] + "/Styles/" + file_name + "_" + name + '.*')) == 0:
-
-        # Add color to image
-        print("Generating '" + name + "'")
-        colorised = colorise_image(image_highres, black_color=black_color, white_color=white_color)
-
-        # Set city title to black and white
-        if len(text_color) > 0:
-
-            # Copy bottom of image, convert to greyscale then paste back
-            box = (0, (height - 1060), width, height)
-            region = colorised.crop(box)
-            region = colorise_image(region, black_color=text_color, white_color=white_color)
-            colorised.paste(region, box)
-
-        colorised.save(file_string[:-12] + "/Styles/" + file_name + "_" + name + ".png")
+        # Horizontal arrangement
+        color_parameters = [["#000099", "#FFFFFF", "#000000", 1.3, 0.320, 0.010, 0.088, "blueonwhite"],
+                            # ["#000000", "#FFFFFF", "#000000", 1.3, 0.320, 0.010, 0.088, "blackonwhite"],
+                            ["#FFFFFF", "#006600", "",        1.3, 0.320, 0.339, 0.088, "whiteongreen"],
+                            ["#006600", "#FFFFFF", "#000000", 1.4, 0.320, 0.668, 0.088, "greenonwhite"],
+                            ["#FFFFFF", "#000000", "",        1.3, 0.320, 0.010, 0.392, "whiteonblack"],
+                            ["#FFFFFF", "#000000", "",        1.0, 0.320, 0.339, 0.392, "lowres"],
+                            ["#FFFFFF", "#000099", "",        1.3, 0.320, 0.668, 0.392, "whiteonblue"],
+                            ["#0c6b71", "#FFFFFF", "#000000", 1.4, 0.320, 0.010, 0.695, "tealonwhite"],
+                            ["#FFFFFF", "#990000", "",        1.3, 0.320, 0.339, 0.695, "whiteonred"],
+                            ["#990000", "#FFFFFF", "#000000", 1.4, 0.320, 0.668, 0.695, "redonwhite"]]
 
     else:
-        # If file already exists, load from either image directory or 'Style' subdirectory
-        print("Loading '" + name + "' from file")
-        colorised = Image.open((glob.glob(file_string[:-12] + "/" + file_name + "_" + name + '.*') +
-                                glob.glob(file_string[:-12] + "/Styles/" + file_name + "_" + name + '.*'))[0])
 
-    # Resize color image according to parameters and paste into canvas
-    colorised.thumbnail((int(output_canvas.width * size), int(output_canvas.height * size)), Image.ANTIALIAS)
-    output_canvas.paste(colorised, (int(output_canvas.width * xdim), int(output_canvas.height * ydim)))
+        # Vertical arrangement
+        color_parameters = [["#FFFFFF", "#000000", "",        1.3, 0.440, 0.010, 0.092, "whiteonblack"],
+                            ["#0c6b71", "#FFFFFF", "#000000", 1.4, 0.440, 0.257, 0.092, "tealonwhite"],
+                            ["#FFFFFF", "#006600", "",        1.3, 0.440, 0.504, 0.092, "whiteongreen"],
+                            ["#000099", "#FFFFFF", "#000000", 1.3, 0.440, 0.752, 0.092, "blueonwhite"],
+                            ["#990000", "#FFFFFF", "#000000", 1.4, 0.440, 0.010, 0.542, "redonwhite"],
+                            ["#FFFFFF", "#000099", "",        1.3, 0.440, 0.257, 0.542, "whiteonblue"],
+                            ["#006600", "#FFFFFF", "#000000", 1.4, 0.440, 0.504, 0.542, "greenonwhite"],
+                            ["#FFFFFF", "#990000", "",        1.3, 0.440, 0.752, 0.542, "whiteonred"]]
 
-    # Close
-    colorised.close()
+    for black_color, white_color, text_color, contrast, size, xdim, ydim, name in color_parameters:
 
-# Add to canvas
-output_canvas.save(file_string[:-12] + "/" + file_name + "_allstyles.png")
+        # Set up directory if does not exist
+        if not os.path.exists(file_string[:-12] + "/Styles"):
+            os.makedirs(file_string[:-12] + "/Styles")
+
+        # Test if colored file exists either in image directory or 'Style' subdirectory
+        if len(glob.glob(file_string[:-12] + "/" + file_name + "_" + name + '.*') +
+               glob.glob(file_string[:-12] + "/Styles/" + file_name + "_" + name + '.*')) == 0:
+
+            # Rescale contrast
+            contrast_scaled = (contrast - 1.0) * color_scale + 1
+
+            # Add color to image
+            print("Generating '" + name + "'")
+            colorised = colorise_image(image_highres, black_color=black_color,
+                                       white_color=white_color, contrast=contrast_scaled)
+
+            # Set city title to black and white
+            if len(text_color) > 0:
+
+                # Copy bottom of image, convert to greyscale then paste back
+                box = (0, (height - 1060), width, height)
+                region = colorised.crop(box)
+                region = colorise_image(region, black_color=text_color, white_color=white_color)
+                colorised.paste(region, box)
+
+            colorised.save(file_string[:-12] + "/Styles/" + file_name + "_" + name + ".png")
+
+        else:
+            # If file already exists, load from either image directory or 'Style' subdirectory
+            print("Loading '" + name + "' from file")
+            colorised = Image.open((glob.glob(file_string[:-12] + "/" + file_name + "_" + name + '.*') +
+                                    glob.glob(file_string[:-12] + "/Styles/" + file_name + "_" + name + '.*'))[0])
+
+        # Resize color image according to parameters and paste into canvas
+        colorised.thumbnail((int(output_canvas.width * size), int(output_canvas.height * size)), Image.ANTIALIAS)
+        output_canvas.paste(colorised, (int(output_canvas.width * xdim), int(output_canvas.height * ydim)))
+
+        # Close
+        colorised.close()
+
+    # Add to canvas
+    output_canvas.save(file_string[:-12] + "/" + file_name + "_allstyles.png")
 
 
 # Optional: three styles ----------------------------------------------------------------------------------------------
@@ -249,7 +262,7 @@ if three_styles and (not desat_exists or not styles_frame_exists):
 
     # Paste into all style frame
     height_adj = int((720 - 720 * three_styles_zoom) * 0.7)
-    all_styles_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_three_styles.png")
+    all_styles_frame = Image.open("Scripts/Elements/frame_three_styles.png")
     all_styles_frame.paste(image_white, (30, 100 + height_adj), image_white)
     all_styles_frame.paste(image_plasma, (980, 255 + height_adj), image_white)
     all_styles_frame.paste(image_black, (710, 820 + height_adj), image_white)
@@ -307,7 +320,7 @@ if two_styles and (not black_exists or not styles_frame_exists):
 
     # Paste into all style frame
     height_adj = int((720 - 720 * two_styles_zoom) * 0.7)
-    all_styles_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_two_styles.png")
+    all_styles_frame = Image.open("Scripts/Elements/frame_two_styles.png")
     all_styles_frame.paste(image_white, (50, 100 + height_adj), image_white)
     all_styles_frame.paste(image_black, (1060, 700 + height_adj), image_white)
     all_styles_frame.save(file_string[:-12] + "/" + file_name + "_frame_two.jpg")
@@ -333,7 +346,7 @@ if width > height and not frame_exists:
     image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
-    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_hor_" + str(random.randint(1,4)) + ".png")
+    etsy_frame = Image.open("Scripts/Elements/frame_hor_" + str(random.randint(1,4)) + ".png")
     etsy_frame_overlay = etsy_frame.convert("RGBA")
 
     etsy_frame.paste(image_frame, (128, 128))
@@ -341,15 +354,22 @@ if width > height and not frame_exists:
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
 
     # Add "new" banner
-    etsy_new = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_new.png")
+    etsy_new = Image.open("Scripts/Elements/frame_new.png")
     etsy_frame.paste(etsy_new, (0, 0), etsy_new)
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_new.jpg")
 
     # Add "ultra" banner
     if height > 19999 or width > 19999:
-        etsy_ultra = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_ultra.png")
+        etsy_ultra = Image.open("Scripts/Elements/frame_ultra.png")
         etsy_frame.paste(etsy_ultra, (0, 0), etsy_ultra)
         etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ultra.jpg")
+
+    # Add "9 styles" banner
+    if nine_styles:
+        etsy_ninestyles = Image.open("Scripts/Elements/frame_9styles_hor.png")
+        etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
+        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ninestyles.jpg")
+
 
 # Square frames
 elif width == height and not frame_exists:
@@ -363,7 +383,7 @@ elif width == height and not frame_exists:
     image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
-    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_sq_" + str(random.randint(1,4)) + ".png")
+    etsy_frame = Image.open("Scripts/Elements/frame_sq_" + str(random.randint(1,4)) + ".png")
     etsy_frame_overlay = etsy_frame.copy()
 
     etsy_frame.paste(image_frame, (216, 74))
@@ -371,15 +391,22 @@ elif width == height and not frame_exists:
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
 
     # Add "new" banner
-    etsy_new = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_new.png")
+    etsy_new = Image.open("Scripts/Elements/frame_new.png")
     etsy_frame.paste(etsy_new, (0, 0), etsy_new)
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_new.jpg")
 
     # Add "ultra" banner
     if height > 19999 or width > 19999:
-        etsy_ultra = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_ultra.png")
+        etsy_ultra = Image.open("Scripts/Elements/frame_ultra.png")
         etsy_frame.paste(etsy_ultra, (0, 0), etsy_ultra)
         etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ultra.jpg")
+
+    # Add "9 styles" banner
+    if nine_styles:
+        etsy_ninestyles = Image.open("Scripts/Elements/frame_9styles_hor.png")
+        etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
+        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ninestyles.jpg")
+
 
 # Vertical frames
 elif width < height and not frame_exists:
@@ -393,12 +420,18 @@ elif width < height and not frame_exists:
     image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
 
     # Open frame and paste in image
-    etsy_frame = Image.open("D:/Dropbox/EarthArtAustralia/Scripts/Elements/frame_vert_" + str(random.randint(1,4)) + ".png")
+    etsy_frame = Image.open("Scripts/Elements/frame_vert_" + str(random.randint(1,4)) + ".png")
     etsy_frame_overlay = etsy_frame.copy()
 
     etsy_frame.paste(image_frame, (277, 143))
     etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
     etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
+
+    # Add "9 styles" banner
+    if nine_styles:
+        etsy_ninestyles = Image.open("Scripts/Elements/frame_9styles_vert.png")
+        etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
+        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ninestyles.jpg")
 
 
 # Subsets -------------------------------------------------------------------------------------------------------------
@@ -433,7 +466,7 @@ for zoom in range(3, subsets + 1):
 # Update Excel file ---------------------------------------------------------------------------------------------------
 
 # Load excel data
-rb = open_workbook("D:/Dropbox/EarthArtAustralia/Download links/DownloadandPrintingGuide_data.xls")
+rb = open_workbook("Download links/DownloadandPrintingGuide_data.xls")
 r = rb.sheet_by_index(0).nrows
 
 # If current map not in sheet, add to excel
@@ -457,7 +490,7 @@ if map_name not in rb.sheet_by_index(0).col_values(0):
     s.col(5).width = 3800
 
     # Save to excel document
-    wb.save('D:/Dropbox/EarthArtAustralia/Download links/DownloadandPrintingGuide_data.xls')
+    wb.save('Download links/DownloadandPrintingGuide_data.xls')
     print("Added data to excel!")
 
 else:
