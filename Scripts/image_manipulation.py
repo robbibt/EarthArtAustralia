@@ -90,6 +90,35 @@ def colorise_image(src, black_color ="#FFFFFF", white_color ="#000000", contrast
     result.putalpha(alpha)
     return result
 
+def insert_frame(highres_input, size, location, frame_path, frame_ninestyles, ouput_path, nine_styles):
+
+    image_frame = highres_input.copy()
+    image_frame.thumbnail(size, Image.ANTIALIAS)
+
+    # Improve contrast
+    image_frame = ImageEnhance.Contrast(image_frame).enhance(1.15)
+    image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
+
+    # Open frame and paste in image
+    etsy_frame = Image.open(frame_path)
+    etsy_frame_overlay = etsy_frame.copy()
+
+    etsy_frame.paste(image_frame, location)
+    etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
+    etsy_frame.save(ouput_path + "_frame.jpg")
+
+    # Add "9 styles" banner
+    if nine_styles:
+        etsy_ninestyles = Image.open(frame_ninestyles)
+        etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
+        etsy_frame.save(ouput_path + "_frame_ninestyles.jpg")
+
+        # Additional white on black frame
+        etsy_frame = colorise_image(etsy_frame, black_color="#FFFFFF", white_color="#000000", contrast=1)
+        etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
+        etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
+        etsy_frame.save(ouput_path + "_frame_ninestyles_bw.jpg")
+
 # Working directory
 os.chdir("D:/Google Drive/EarthArtAustralia/")
 
@@ -97,27 +126,12 @@ os.chdir("D:/Google Drive/EarthArtAustralia/")
 # Entire function -----------------------------------------------------------------------------------------------------
 
 def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, city, city_name, coordinates, text_size,
-                       text_nudge, nine_styles, nine_styles_scale, three_styles, three_styles_zoom):
+                       text_nudge, nine_styles, nine_styles_scale):
 
-    # Read in and set up file parameters ------------------------------------------------------------------------------
+    # Set up file parameters ------------------------------------------------------------------------------
 
     # Identify file name
     file_name = os.path.basename(file_string[:-12])
-
-    # Read image
-    image_highres = Image.open(file_string)
-    width, height = image_highres.size
-
-    # If black and white image, reduce file size
-    if map_desc in ["Buildings", "Every Road", "Shadowlands"]:
-
-        # image_highres = image_highres.convert("L")
-        # image_highres.save(file_string, optimize=True)
-
-        image_highres = image_highres.convert("RGBA")
-
-    else:
-        image_highres = image_highres.convert("RGBA")
 
     # Set up main directory if does not exist
     if not os.path.exists(file_string[:-12]):
@@ -127,7 +141,12 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
     if not os.path.exists(file_string[:-12] + "/" + file_name + "_styles"):
         os.makedirs(file_string[:-12] + "/" + file_name + "_styles")
 
-    # Add titles and coordinates for city maps ------------------------------------------------------------------------
+    # Read image, optionally add titles and coordinates for city maps -------------------------------------------------
+
+    # Read image
+    image_highres = Image.open(file_string)
+    width, height = image_highres.size
+    image_highres = image_highres.convert("RGBA")
 
     if city:
 
@@ -158,8 +177,6 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
         # Set up fonts
         city_font = ImageFont.truetype("Scripts/Fonts/ADAM_kerning.ttf", int(800 * text_size))
         coords_font = ImageFont.truetype("Scripts/Fonts/Abel-Regular.ttf", int(370 * text_size))
-        # city_font = ImageFont.truetype("Scripts/Fonts/ADAM_kerning.ttf", 800*0.9)  # vertical with country names
-        # coords_font = ImageFont.truetype("Scripts/Fonts/Abel-Regular.ttf", 370*0.9)  # vertical with country names
 
         # Set up city and coordinate strings for plotting (using widths to centre)
         city_width, city_height = draw.textsize(city_name, font=city_font)
@@ -173,7 +190,6 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
 
         # Combine coordinate string and add zeroes to space around title, and between letters for kerning
         coordinates = coordinates_split[0] + " " * (city_width / 140) + coordinates_split[1] + " "
-        # coordinates = coordinates_split[0] + " " * (city_width / 147) + coordinates_split[1] + " " # vertical with country names
         coordinates = " ".join(coordinates)
         coords_width, coords_height = draw.textsize(coordinates, font=coords_font)
 
@@ -184,185 +200,48 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
         # Export to file
         image_highres.save(file_string, optimize=True)
 
-    # Low res ---------------------------------------------------------------------------------------------------------
+    # Generate low resolution versions --------------------------------------------------------------------------------
 
     image_lowres = image_highres.copy()
-    maxsize = (2300, 2000)
-    image_lowres.thumbnail(maxsize, Image.ANTIALIAS)
+    image_lowres.thumbnail((2300, 2000), Image.ANTIALIAS)
     image_lowres.save(file_string[:-12] + "/" + file_name + "_lowres.jpg", quality=85, optimize=True)
-
-    # Instagram
     image_insta = ImageOps.expand(image_lowres, border=500, fill="#FFFFFF")
     image_insta.save(file_string[:-12] + "/" + file_name + "_insta.jpg", quality=85, optimize=True)
-
-    # Optional: three styles ------------------------------------------------------------------------------------------
-
-    # Only run if all frames requested and either black or all style frame doesn't exist
-    desat_exists = os.path.isfile(file_string[:-12] + "_black_highres.png")
-    styles_frame_exists = os.path.isfile(file_string[:-12] + "/" + file_name + "_frame_three.jpg")
-
-    if three_styles and (not desat_exists or not styles_frame_exists):
-
-        # Remove color and increase contrast
-        image_black = ImageEnhance.Color(image_highres).enhance(0)
-        image_black = ImageEnhance.Contrast(image_black).enhance(1.5)
-        image_black.save(file_string[:-12] + "_black_highres.png")
-
-        # Convert to RGB if RGBA to allow invert
-        if image_black.mode == 'RGBA':
-
-            r, g, b, a = image_black.split()
-            rgb_image = Image.merge('RGB', (r,g,b))
-            inverted_image = ImageOps.invert(rgb_image)
-            r2, g2, b2 = inverted_image.split()
-            image_white = Image.merge('RGBA', (r2, g2, b2, a))
-            image_white.save(file_string[:-12] + "_white_highres.png")
-
-        # If already RGB
-        else:
-            image_white = ImageOps.invert(image_black)
-            image_white.save(file_string[:-12] + "_white_highres.png")
-
-        # Resize into thumbnails
-        maxsize = (1200 * three_styles_zoom, 720 * three_styles_zoom)
-        image_plasma = image_highres.copy()
-        image_plasma.thumbnail(maxsize, Image.ANTIALIAS)
-        image_black.thumbnail(maxsize, Image.ANTIALIAS)
-        image_white.thumbnail(maxsize, Image.ANTIALIAS)
-
-        # Set to alpha in-place
-        image_white = image_white.convert("RGBA")
-        pixdata = image_white.load()
-
-        for y in xrange(image_white.size[1]):
-            for x in xrange(image_white.size[0]):
-                if pixdata[x, y] == (255, 255, 255, 255):
-                    pixdata[x, y] = (255, 255, 255, 0)
-
-        # Paste into all style frame
-        height_adj = int((720 - 720 * three_styles_zoom) * 0.7)
-        all_styles_frame = Image.open("Scripts/Elements/frame_three_styles.png")
-        all_styles_frame.paste(image_white, (30, 100 + height_adj), image_white)
-        all_styles_frame.paste(image_plasma, (980, 255 + height_adj), image_white)
-        all_styles_frame.paste(image_black, (710, 820 + height_adj), image_white)
-        all_styles_frame.save(file_string[:-12] + "/" + file_name + "_frame_all.jpg")
-
-        # Close files
-        image_black.close()
-        image_white.close()
-        image_plasma.close()
 
     # Frame -----------------------------------------------------------------------------------------------------------
 
     # Horizontal frames
     if width > height:
 
-        image_frame = image_highres.copy()
-        maxsize = (1200, 666)
-        image_frame.thumbnail(maxsize, Image.ANTIALIAS)
-
-        # Improve contrast
-        image_frame = ImageEnhance.Contrast(image_frame).enhance(1.15)
-        image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
-
-        # Open frame and paste in image
-        etsy_frame = Image.open("Scripts/Elements/frame_hor_" + str(random.randint(1,4)) + ".png")
-        etsy_frame_overlay = etsy_frame.convert("RGBA")
-
-        etsy_frame.paste(image_frame, (128, 128))
-        etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
-        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
-
-        # Add "new" banner
-        etsy_new = Image.open("Scripts/Elements/frame_new.png")
-        etsy_frame.paste(etsy_new, (0, 0), etsy_new)
-        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_new.jpg")
-
-        # Add "ultra" banner
-        if height > 19999 or width > 19999:
-            etsy_ultra = Image.open("Scripts/Elements/frame_ultra.png")
-            etsy_frame.paste(etsy_ultra, (0, 0), etsy_ultra)
-            etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ultra.jpg")
-
-        # Add "9 styles" banner
-        if nine_styles:
-            etsy_ninestyles = Image.open("Scripts/Elements/frame_9styles_hor.png")
-            etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
-            etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ninestyles.jpg")
-
-            # Additional white on black frame
-            etsy_frame = colorise_image(etsy_frame, black_color="#FFFFFF", white_color="#000000", contrast=1)
-            etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
-            etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
-            etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ninestyles_bw.jpg")
+        insert_frame(highres_input=image_highres,
+                     size=(1200, 666),
+                     location=(128, 128),
+                     frame_path="Scripts/Elements/frame_hor_" + str(random.randint(1, 4)) + ".png",
+                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
+                     ouput_path=file_string[:-12] + "/" + file_name,
+                     nine_styles=nine_styles)
 
     # Square frames
     elif width == height:
 
-        image_frame = image_highres.copy()
-        maxsize = (781, 781)
-        image_frame.thumbnail(maxsize, Image.ANTIALIAS)
-
-        # Improve contrast
-        image_frame = ImageEnhance.Contrast(image_frame).enhance(1.15)
-        image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
-
-        # Open frame and paste in image
-        etsy_frame = Image.open("Scripts/Elements/frame_sq_" + str(random.randint(1,4)) + ".png")
-        etsy_frame_overlay = etsy_frame.copy()
-
-        etsy_frame.paste(image_frame, (216, 74))
-        etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
-        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
-
-        # Add "new" banner
-        etsy_new = Image.open("Scripts/Elements/frame_new.png")
-        etsy_frame.paste(etsy_new, (0, 0), etsy_new)
-        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_new.jpg")
-
-        # Add "ultra" banner
-        if height > 19999 or width > 19999:
-            etsy_ultra = Image.open("Scripts/Elements/frame_ultra.png")
-            etsy_frame.paste(etsy_ultra, (0, 0), etsy_ultra)
-            etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ultra.jpg")
-
-        # Add "9 styles" banner
-        if nine_styles:
-            etsy_ninestyles = Image.open("Scripts/Elements/frame_9styles_hor.png")
-            etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
-            etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ninestyles.jpg")
+        insert_frame(highres_input=image_highres,
+                     size=(781, 781),
+                     location=(216, 74),
+                     frame_path="Scripts/Elements/frame_sq_" + str(random.randint(1, 4)) + ".png",
+                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
+                     ouput_path=file_string[:-12] + "/" + file_name,
+                     nine_styles=nine_styles)
 
     # Vertical frames
     elif width < height:
 
-        image_frame = image_highres.copy()
-        maxsize = (643, 1175)
-        image_frame.thumbnail(maxsize, Image.ANTIALIAS)
-
-        # Improve contrast
-        image_frame = ImageEnhance.Contrast(image_frame).enhance(1.15)
-        image_frame = ImageEnhance.Color(image_frame).enhance(1.05)
-
-        # Open frame and paste in image
-        etsy_frame = Image.open("Scripts/Elements/frame_vert_" + str(random.randint(1,4)) + ".png")
-        etsy_frame_overlay = etsy_frame.copy()
-
-        etsy_frame.paste(image_frame, (277, 137))
-        etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
-        etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame.jpg")
-
-        # Add "9 styles" banner
-        if nine_styles:
-            etsy_ninestyles = Image.open("Scripts/Elements/frame_9styles_vert.png")
-            etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
-            etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ninestyles.jpg")
-
-            # Additional white on black frame
-            etsy_frame = colorise_image(etsy_frame, black_color="#FFFFFF", white_color="#000000", contrast=1)
-            etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
-            etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
-            etsy_frame.save(file_string[:-12] + "/" + file_name + "_frame_ninestyles_bw.jpg")
-
+        insert_frame(highres_input=image_highres,
+                     size=(643, 1175),
+                     location=(277, 137),
+                     frame_path="Scripts/Elements/frame_vert_" + str(random.randint(1, 4)) + ".png",
+                     frame_ninestyles="Scripts/Elements/frame_9styles_vert.png",
+                     ouput_path=file_string[:-12] + "/" + file_name,
+                     nine_styles=nine_styles)
 
     # Subsets ---------------------------------------------------------------------------------------------------------
 
@@ -383,8 +262,8 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
 
     # Save random insets
     for zoom in range(3, subsets + 1):
-        x = random.randint(int(width * 0.15), int(width * 0.85))
-        y = random.randint(int(height * 0.15), int(height * 0.85))
+        x = random.randint(int(width * 0.2), int(width * 0.8))
+        y = random.randint(int(height * 0.2), int(height * 0.8))
         image_zoom = image_highres.crop((x - int(max(width, height) * (inset_zoom * 0.5)),
                                          y - int(max(width, height) * (inset_zoom * 0.5)),
                                          x + int(max(width, height) * (inset_zoom * 0.5)),
@@ -571,45 +450,22 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
 
 # Setup ---------------------------------------------------------------------------------------------------------------
 
-# Every Road
-# image_manipulation(file_string='USA/la_buildings_highres.png',
-#                    map_name='Buildings of Los Angeles',
-#                    map_desc='Buildings',  # desc.keys(),
-#                    inset_zoom=0.13,
-#                    subsets=70,
-#
-#                    # Text
-#                    city=True,
-#                    city_name='LOS ANGELES',
-#                    coordinates='34.0522° N, 118.244° W',
-#                    text_size=1.0,  # 1.4 for states
-#                    text_nudge=0,  # 800 for states
-#
-#                    # Styles
-#                    nine_styles=True,
-#                    nine_styles_scale=0.1,
-#                    three_styles=False,
-#                    three_styles_zoom=1.1)
-
-# Buildings
-image_manipulation(file_string='USA/washington_roads_highres.png',
-                   map_name='Roads of Washington',
+image_manipulation(file_string='USA/test_city_highres.png',
+                   map_name='Test',
                    map_desc='Every Road',  # desc.keys(),
                    inset_zoom=0.13,
                    subsets=70,
 
                    # Text
                    city=True,
-                   city_name='WASHINGTON',
-                   coordinates=' , ',
+                   city_name='TEST',
+                   coordinates='test , test',
                    text_size=1.4,  # 1.4 for states
                    text_nudge=800,  # 800 for states
 
                    # Styles
-                   nine_styles=True,
-                   nine_styles_scale=0.1,
-                   three_styles=False,
-                   three_styles_zoom=1.1)
+                   nine_styles=False,
+                   nine_styles_scale=0.1)
 
 
 
