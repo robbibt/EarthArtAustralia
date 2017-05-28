@@ -124,29 +124,14 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
 
     if city:
 
-        if width > height:
-
-            # Open horizontal overlay and paste over city image
-            city_frame = Image.open("Scripts/Elements/frame_hor_city.png")
-            city_frame_overlay = city_frame.convert("RGBA")
-            image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
-
-        elif height > width:
-
-            # Open vertical overlay and paste over city image
-            city_frame = Image.open("Scripts/Elements/frame_vert_city.png")
-            city_frame_overlay = city_frame.convert("RGBA")
-            image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
-
-        elif height == width:
-
-            # Open square overlay and paste over city image
-            city_frame = Image.open("Scripts/Elements/frame_sq_city.png")
-            city_frame_overlay = city_frame.convert("RGBA")
-            image_highres.paste(city_frame_overlay, (0, 0), mask=city_frame_overlay)
-
         # Set up layer for drawing
         draw = ImageDraw.Draw(image_highres)
+
+        # Add in white borders
+        draw.rectangle([0, 0, 300, height], fill = "#FFFFFF")
+        draw.rectangle([0, 0, width, 300], fill="#FFFFFF")
+        draw.rectangle([0, height - 1350 - text_nudge, width, height], fill="#FFFFFF")
+        draw.rectangle([width - 300, 0, width, height], fill="#FFFFFF")
 
         # Set up fonts
         city_font = ImageFont.truetype("Scripts/Fonts/ADAM_kerning.ttf", int(800 * text_size))
@@ -168,8 +153,8 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
         coords_width, coords_height = draw.textsize(coordinates, font=coords_font)
 
         # Add city name and coordinates
-        draw.text(((width-city_width)/2,(height - 1060 - text_nudge)), city_name,(0, 0, 0), font=city_font)
-        draw.text(((width-coords_width)/2 + 50,(height - 960 - text_nudge)), coordinates,(0, 0, 0), font=coords_font)
+        draw.text(((width-city_width)/2, (height - 1060 - text_nudge)), city_name, (0, 0, 0), font=city_font)
+        draw.text(((width-coords_width)/2 + 75, (height - 960 - text_nudge)), coordinates, (0, 0, 0), font=coords_font)
 
         # Export to file
         image_highres.save(file_string, optimize=True)
@@ -430,10 +415,10 @@ image_manipulation(file_string='USA/test_city_highres.png',
 
                    # Text
                    city=True,
-                   city_name='TEST',
-                   coordinates='test , test',
-                   text_size=1.4,  # 1.4 for states
-                   text_nudge=800,  # 800 for states
+                   city_name='NEW YORK',
+                   coordinates='40.7128° N, 74.0059° W',
+                   text_size=1,  # 1.4 for states
+                   text_nudge=0,  # 800 for states
 
                    # Styles
                    nine_styles=False,
