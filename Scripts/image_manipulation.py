@@ -8,51 +8,25 @@ from xlutils.copy import copy
 from xlrd import open_workbook
 from PIL import Image, ImageEnhance, ImageCms, ImageOps, ImageFont, ImageDraw
 import warnings
-warnings.simplefilter('ignore', Image.DecompressionBombWarning)
-
-from __future__ import print_function
 import httplib2
 from apiclient import discovery
-from oauth2client import client
-from oauth2client import tools
 from oauth2client.file import Storage
 from apiclient import errors
+warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/drive-python-quickstart.json
-# SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly'
-SCOPES = 'https://www.googleapis.com/auth/drive'
-CLIENT_SECRET_FILE = 'D:/Google Drive/EarthArtAustralia/Scripts/client_secret.json'
-APPLICATION_NAME = 'Drive API Python Quickstart'
+def get_service(credential_path):
 
-
-def get_credentials():
-    """Gets valid user credentials from storage.
-
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
+    """Gets valid Google Drive service.
     Returns:
-        Credentials, the obtained credential.
+        Service, the obtained service.
     """
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
-                                   'drive-python-quickstart.json')
 
     store = Storage(credential_path)
     credentials = store.get()
-    if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        if flags:
-            credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
-    return credentials
+    http = credentials.authorize(httplib2.Http())
+    service = discovery.build('drive', 'v3', http=http)
+
+    return service
 
 def insert_permission(service, file_id, value="", perm_type="anyone", role="reader", link=True):
   """Insert a new permission.
@@ -364,9 +338,7 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
     r = rb.sheet_by_index(0).nrows
 
     # Main image Google Drive url
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('drive', 'v3', http=http)
+    service = get_service('C:/Users/z3287630/.credentials/drive-python-quickstart.json')
     main = service.files().list(q="name = '" + file_name + "_highres.png' ").execute()
     main_url = "https://drive.google.com/uc?export=download&id=" + main['files'][0]['id']
 
