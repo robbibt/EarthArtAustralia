@@ -2,7 +2,7 @@ library(rmarkdown)
 
 # Set working directory and name
 setwd("D:/Google Drive/EarthArtAustralia/")
-name = "Every Road in Dallas"
+name = "Roads of Texas"
 
 # Render R markdown file as PDF inside 'scripts' directory
 render("Scripts/DownloadandPrintingGuide.Rmd", "pdf_document", 
@@ -24,7 +24,7 @@ shell.exec(paste0(getwd(), "/", to_name))
 # Create tags
 etsy_tags = function(name) {
   
-  suffix = c("map", "art", "poster", "print", "gift idea")
+  suffix = c("map", "art", "poster", "print", "gift")
   tag_list = paste(name, suffix, collapse = ', ')
   tag_list = paste0(tag_list, ", printable, map art, map print, wall art, art print")
   
@@ -33,5 +33,6 @@ etsy_tags = function(name) {
   
 }
 
-etsy_tags(name = "Germany")
+etsy_tags(name = "Idaho")
 etsy_tags(name = tail(strsplit(name, split = " ")[[1]], 1))
+# etsy_tags(name = paste(tail(strsplit(name, split = " ")[[1]], 2), collapse = " "))

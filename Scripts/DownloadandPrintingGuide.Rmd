@@ -66,7 +66,7 @@ filesize_mb = paste0(round(filesize / 1024 / 1024, 0),"mb")
 
 ```
 
-```{r, out.width = "250px", echo = FALSE, fig.align='center'}
+```{r, out.width = "230px", echo = FALSE, fig.align='center'}
 
 # Identify possible frame directory
 split_path = strsplit(data_sub$file_link, "/")[[1]] 
@@ -87,9 +87,9 @@ if (file.exists(image_link)) {
 
 ```
 
-## Download link 
+## Download `r if( multiple ){ "links" } else { "link" }`
 
-Thanks for purchasing `r params$name`! Due to Etsy's small upload limit, please download the `r data_sub$pixels` pixel, `r I(filesize_mb)` high resolution `r if( multiple ){ "maps" } else { "map" }` using the `r if( multiple ){ "links" } else { "link" }` below:
+Thanks for purchasing `r params$name`! Please download the `r data_sub$pixels` pixel, `r I(filesize_mb)` high resolution `r if( multiple ){ "maps" } else { "map" }` using the `r if( multiple ){ "links" } else { "link" }` below:
 
 `r if(!is.na(nchar(links_n[1]))){ paste0("### [>> Click here to download ", version_n[1], " <<](", links_n[1], ")") }`
 `r if(!is.na(nchar(links_n[2]))){ paste0("### [>> Click here to download ", version_n[2], " <<](", links_n[2], ")") }`
@@ -100,33 +100,47 @@ Thanks for purchasing `r params$name`! Due to Etsy's small upload limit, please 
 `r if(!is.na(nchar(links_n[7]))){ paste0("### [>> Click here to download ", version_n[7], " <<](", links_n[7], ")") }`
 `r if(!is.na(nchar(links_n[8]))){ paste0("### [>> Click here to download ", version_n[8], " <<](", links_n[8], ")") }`
 
+\begingroup\footnotesize
+
+`r if(any(grepl("styles", version_n))){ 
+
+paste0("If the Styles link does not work, please try copy-pasting the following link into your browser, or send me a message on Etsy!   ", links_n[2])
+
+}`
+
+\endgroup
+
 ## Printing tips
 
-Once you download, simply take the `r if( multiple ){ "files" } else { "file" }` along to your local print shop on a USB drive to get `r if( multiple ){ "them" } else { "it" }` printed! The `r if( multiple ){ "maps are" } else { "map is" }` suitable for printing out extremely large: up to `r paper_size(pixels = data_sub$pixels, DPI = 300)`. I recommend selecting a heavier semi-gloss/luster paper (150-250 gsm) for the best printing results!
+Once you download, simply take the `r if( multiple ){ "files" } else { "file" }` along to your local print shop on a USB drive to get `r if( multiple ){ "them" } else { "it" }` printed! The `r if( multiple ){ "maps are" } else { "map is" }` suitable for printing out extremely large: up to `r paper_size(pixels = data_sub$pixels, DPI = 300)`. I recommend selecting a heavier, high quality paper (150-250 gsm) for the best printing results!
 
-`r if(any(grepl("CMYK", version_n))){ "**Print-optimised CMYK file:** This product also comes with a print-optimised .tif file of the 'Plasma' version of the map in the [CMYK color space](http://sploid.gizmodo.com/the-difference-between-rgb-and-cmyk-explained-1777830600). Even though the file may appear more washed out than the .png file you also received, printing shops often prefer this format as it typically results in improved printing results. I'd recommend bringing both Plasma .png and .tif versions along to the printer and see which they prefer!
+`r if(any(grepl("CMYK", version_n))){ "**Print-optimised CMYK file:** This product also comes with a print-optimised .tif file of the 'Plasma' version of the map in the [CMYK color space](http://sploid.gizmodo.com/the-difference-between-rgb-and-cmyk-explained-1777830600). Even though the file may appear less vibrant than the .png file you also received, printing shops often prefer this format as it typically results in improved printing results. I recommend bringing both Plasma .png and .tif versions along to the printer and see which they prefer!
 " }`
 
 ## Custom maps + please leave a review! ###
 
-If you have any questions at all about the data in the maps or printing, please don't hesitate to [contact me via Etsy](https://www.etsy.com/au/conversations/new?with_id=85706160). I also do custom maps for any part of the world, so send me a message if you have something in mind and I'll see what I can do! (depending on the data and time required, custom maps typically cost between $25 to $80 AUD)
+Please don't hesitate to **[contact me via Etsy](https://www.etsy.com/au/conversations/new?with_id=85706160)** with any questions about the maps or printing! I also do custom maps for any part of the world, so send me a message if you have something in mind and I'll see what I can do! (depending on the data and time required, custom maps typically cost between $25 to $80 AUD).
 
-Finally, if you like the `r if( length(links_n) > 1 ){ "maps" } else { "map" }` I'd really love it if you could leave me a quick review on Etsy (click ["You > Purchases and Reviews"](https://www.etsy.com/au/your/purchases?ref=hdr_user_menu)). Send me a message if you do and I'll give you **any ready-made map of your choice for free**! 
+Finally, if you like the `r if( length(links_n) > 1 ){ "maps" } else { "map" }` I'd really love it if you could leave me a quick Etsy review (click **["You > Purchases and Reviews"](https://www.etsy.com/au/your/purchases?ref=hdr_user_menu)**). Send me a message if you do and I'll give you **any ready-made map of your choice for free**! I hope the map looks amazing on your wall!
 
-Hope they look amazing on your wall!
+Robbi Bishop-Taylor
 
-Robbi Bishop-Taylor  
-*EarthArtAustralia*
+## Follow EarthArtAustralia online!
 
-**Etsy store:** <https://www.etsy.com/shop/EarthArtAustralia>  
-**Facebook:** <https://www.facebook.com/EarthArtAustralia/>  
-**Instagram:** <https://www.instagram.com/EarthArtAustralia/>
-  
-------
+**[Etsy store](https://www.etsy.com/shop/EarthArtAustralia)   |   [Facebook](https://www.facebook.com/EarthArtAustralia/)   | [Instagram](https://www.instagram.com/EarthArtAustralia/)   |   [Pinterest](https://au.pinterest.com/earthartaus/)  **
   
 ## About the `r if( length(links_n) > 1 ){ "maps" } else { "map" }`
 `r data_sub$map_desc`
 
-------
+## Copyright
+ 
+All map prints copyright &copy; 2017 EarthArtAustralia; Robbi Bishop-Taylor. EarthArtAustralia's map prints are for personal use only; please do not redistribute or reproduce artworks commercially.
 
-All map prints copyright &copy; 2016 EarthArtAustralia; Robbi Bishop-Taylor. EarthArtAustralia's map prints are for personal use only; please do not redistribute or reproduce artworks commercially.
+```{r, out.width = "500px", echo = FALSE, fig.align='center'}
+
+knitr::include_graphics(paste0(params$dropbox_dir, "/Scripts/Elements/thirty_off.jpg")) 
+
+
+```
+
+[As a thankyou for ordering, use the coupon "THIRTYOFF" at checkout to get 30% off your next EarthArtAustralia order!](https://www.etsy.com/shop/EarthArtAustralia)
