@@ -99,7 +99,7 @@ os.chdir("D:/Google Drive/EarthArtAustralia/")
 
 # Entire function -----------------------------------------------------------------------------------------------------
 
-def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, city, city_name, coordinates, text_size,
+def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, name, name_text, coordinates, text_size,
                        text_nudge, nine_styles, nine_styles_scale):
 
     # Set up file parameters ------------------------------------------------------------------------------
@@ -122,39 +122,39 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
     width, height = image_highres.size
     image_highres = image_highres.convert("RGBA")
 
-    if city:
+    if name:
 
         # Set up layer for drawing
         draw = ImageDraw.Draw(image_highres)
 
         # Add in white borders
-        draw.rectangle([0, 0, 300, height], fill = "#FFFFFF")
-        draw.rectangle([0, 0, width, 300], fill="#FFFFFF")
-        draw.rectangle([0, height - 1350 - text_nudge, width, height], fill="#FFFFFF")
-        draw.rectangle([width - 300, 0, width, height], fill="#FFFFFF")
+        # draw.rectangle([0, 0, 300, height], fill = "#FFFFFF")
+        # draw.rectangle([0, 0, width, 300], fill="#FFFFFF")
+        draw.rectangle([0, (height - 1350 - text_nudge), width, height], fill="#FFFFFF")
+        # draw.rectangle([(width - 300), 0, width, height], fill="#FFFFFF")
 
         # Set up fonts
         city_font = ImageFont.truetype("Scripts/Fonts/ADAM_kerning.ttf", int(800 * text_size))
         coords_font = ImageFont.truetype("Scripts/Fonts/Abel-Regular.ttf", int(370 * text_size))
 
         # Set up city and coordinate strings for plotting (using widths to centre)
-        city_width, city_height = draw.textsize(city_name, font=city_font)
-        coordinates_split = coordinates.replace("\xc2", "").split(", ")
+        city_width, city_height = draw.textsize(name_text, font=city_font)
+        coords_split = coordinates.replace("\xc2", "").split(", ")
 
-        if len(coordinates_split[0]) > len(coordinates_split[1]):
-            coordinates_split[1] = coordinates_split[1] + "  "
+        if len(coords_split[0]) > len(coords_split[1]):
+            coords_split[1] = coords_split[1] + "  "
 
-        elif len(coordinates_split[0]) < len(coordinates_split[1]):
-            coordinates_split[0] = "  " + coordinates_split[0]
+        elif len(coords_split[0]) < len(coords_split[1]):
+            coords_split[0] = "  " + coords_split[0]
 
-        # Combine coordinate string and add zeroes to space around title, and between letters for kerning
-        coordinates = coordinates_split[0] + " " * (city_width / 140) + coordinates_split[1] + " "
-        coordinates = " ".join(coordinates)
-        coords_width, coords_height = draw.textsize(coordinates, font=coords_font)
+        # Combine coordinate string and add spaces to space around title, and between letters for kerning
+        coords_new = coords_split[0] + " " * (city_width / 173 + 5) + coords_split[1]
+        coords_new = " ".join(coords_new)
+        coords_width, coords_height = draw.textsize(coords_new, font=coords_font)
 
         # Add city name and coordinates
-        draw.text(((width-city_width)/2, (height - 1060 - text_nudge)), city_name, (0, 0, 0), font=city_font)
-        draw.text(((width-coords_width)/2 + 75, (height - 960 - text_nudge)), coordinates, (0, 0, 0), font=coords_font)
+        draw.text(((width-city_width)/2, (height - 1060 - text_nudge)), name_text, (0, 0, 0), font=city_font)
+        draw.text(((width-coords_width)/2 + 10, (height - 960 - text_nudge)), coords_new, (0, 0, 0), font=coords_font)
 
         # Export to file
         image_highres.save(file_string, optimize=True)
@@ -236,16 +236,6 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
 
         output_canvas = Image.open("Scripts/Elements/frame_nine_styles.png")
 
-        color_parameters = [["#FFFFFF", "#000000", "",        0.648, 0.010, 0.088, "lowres"],
-                            ["#FFFFFF", "#000000", "",        0.320, 0.010, 0.695, "whiteonblack"],
-                            ["#FFFFFF", "#000099", "",        0.320, 0.339, 0.695, "whiteonblue"],
-                            ["#FFFFFF", "#990000", "",        0.320, 0.668, 0.695, "whiteonred"],
-                            ["#FFFFFF", "#006600", "",        0.320, 0.668, 0.388, "whiteongreen"],
-                            ["#006600", "#FFFFFF", "#000000", 0.155, 0.668, 0.235, "greenonwhite"],
-                            ["#990000", "#FFFFFF", "#000000", 0.155, 0.832, 0.235, "redonwhite"],
-                            ["#000099", "#FFFFFF", "#000000", 0.155, 0.832, 0.088, "blueonwhite"],
-                            ["#4d1b7b", "#FFFFFF", "#000000", 0.155, 0.668, 0.088, "purpleonwhite"]]
-
         if width > height:
 
             # Horizontal arrangement
@@ -291,7 +281,7 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
                 if len(text_color) > 0:
 
                     # Copy bottom of image, convert to greyscale then paste back
-                    box = (0, (height - 1060 - text_nudge), width, height)
+                    box = (0, (height - 1350 - text_nudge), width, height)
                     region = colorised.crop(box)
                     region = colorise_image(region, black_color=text_color, white_color=white_color)
                     colorised.paste(region, box)
@@ -407,21 +397,21 @@ def image_manipulation(file_string, map_name, map_desc, inset_zoom, subsets, cit
 
 # Setup ---------------------------------------------------------------------------------------------------------------
 
-image_manipulation(file_string='USA/test_city_highres.png',
-                   map_name='Test',
+image_manipulation(file_string='Canada/vancouver_city_highres.png',
+                   map_name='Every Road in Vancouver',
                    map_desc='Every Road',  # desc.keys(),
                    inset_zoom=0.13,
                    subsets=70,
 
                    # Text
-                   city=True,
-                   city_name='NEW YORK',
-                   coordinates='40.7128° N, 74.0059° W',
+                   name=False,
+                   name_text='VANCOUVER',
+                   coordinates='49.2827° N, 123.121° W',
                    text_size=1,  # 1.4 for states
                    text_nudge=0,  # 800 for states
 
                    # Styles
-                   nine_styles=False,
+                   nine_styles=True,
                    nine_styles_scale=0.1)
 
 
