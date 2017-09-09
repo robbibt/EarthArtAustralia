@@ -7,7 +7,7 @@ Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/bin/pandoc")
 setwd("D:/Google Drive/EarthArtAustralia/")
 
 title = args[1]
-# title = "Every Road in Vancouver Island"
+# title = "Waterways of Australia"
 
 # Render R markdown file as PDF inside 'scripts' directory
 rmarkdown::render("Scripts/DownloadandPrintingGuide.Rmd", "pdf_document",

@@ -5,7 +5,7 @@ documentclass: article
 geometry: margin=1.7cm
 output: pdf_document
 params:
-  dropbox_dir: blah
+  dropbox_dir: D:/Google Drive/EarthArtAustralia
   name: Every Road in Dallas
 
 ---
@@ -46,34 +46,6 @@ paper_size = function(pixels, DPI=300, tolerance=0.95){
   return(paper_size)
 
 }
-
-# # Define paper size function
-# paper_size = function(pixels, DPI=200){
-# 
-#   pixels_n = as.numeric(strsplit(pixels, " x ")[[1]])
-#   inches = max(pixels_n) / DPI
-#   cm = inches * 2.54
-# 
-#   if (cm > 141.4 * tolerance) {
-#     paper_size = paste0("B0 size (1.0 x 1.4 m / 3.3 x 4.6 ft) at ~", DPI,
-#                         " DPI (A1 size or above is best to make out all of the smaller features)")
-# 
-#   } else if(cm > 118.9 * tolerance) {
-#     paper_size = paste0("A0 size (84 x 119 cm / 33 x 47 in) at ~", DPI,
-#                         " DPI (A1 size or above is best to make out all of the smaller features)")
-# 
-#   } else if(cm > 100.0 * tolerance) {
-#     paper_size = paste0("B1 size (71 x 100 cm / 28 x 39 in) at ~", DPI, " DPI (or larger at reduced resolution)")
-# 
-#   } else if(cm > 84.1 * tolerance) {
-#     paper_size = paste0("A1 size (59 x 84 cm	/ 23 x 33 in) at ~", DPI, " DPI (or larger at reduced resolution)")
-# 
-#   } else {
-#     paper_size = "ERROR" }
-# 
-#   return(paper_size)
-# 
-# }
 
 # Import data file and subset to map name
 data_df = read_excel(paste0(params$dropbox_dir, "/Download links/DownloadandPrintingGuide_data.xls"))
