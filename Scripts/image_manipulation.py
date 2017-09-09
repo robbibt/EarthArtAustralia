@@ -164,6 +164,9 @@ def physical_maps(file_string, map_name, words_name):
     place, map_desc, res = os.path.basename(file_string[:-4]).split("_")
     file_name = place + "_" + map_desc
 
+    # Choice of random overlay
+    x = str(random.randrange(1,6))
+
     # Vertical
     if height > width:
 
@@ -171,7 +174,7 @@ def physical_maps(file_string, map_name, words_name):
         insert_frame(highres_input=image_highres,
                      size=(1153, 1153),
                      location=(668 - (int(1153 / 1.4189) / 2), 1240 - 1153),
-                     frame_path="Scripts/Elements/mockups/mockup_template_vert.png",
+                     frame_path="Scripts/Elements/mockups/mockup_template_vert" + x + ".png",
                      frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
                      ouput_path=dir_name + "/" + file_name + "/" + file_name + "_mockup.jpg",
                      nine_styles=False)
@@ -199,7 +202,7 @@ def physical_maps(file_string, map_name, words_name):
         insert_frame(highres_input=image_highres,
                      size=(1153, 1153),
                      location=(882 - int(1153 / 2), 850 - int(1153 / 1.4189)),
-                     frame_path="Scripts/Elements/mockups/mockup_template_hor.png",
+                     frame_path="Scripts/Elements/mockups/mockup_template_hor" + x + ".png",
                      frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
                      ouput_path=dir_name + "/" + file_name + "/" + file_name + "_mockup.jpg",
                      nine_styles=False)
@@ -250,6 +253,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
                        text_size, text_nudge, nine_styles, nine_styles_scale, name_text=False):
 
     # Generate tags and title
+    print("Printable maps:")
     etsy_title(title=map_name, words_name=words_name)
     etsy_tags(title=map_name, words_name=words_name)
 
@@ -397,14 +401,11 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
         image_zoom.save(dir_name + "/" + file_name + "/" + file_name + "_zoom_" + str(zoom) + ".jpg", quality=85, optimize=True)
         image_zoom.close()
 
-    # Featured on
-    image_zoom_middle.thumbnail((755, 755), Image.ANTIALIAS)
-    featuredon_overlay = Image.open("Scripts/Elements/featuredon_overlay.png")
-    image_zoom_middle.paste(featuredon_overlay, (0, 0), mask=featuredon_overlay)
-    image_zoom_middle.save(dir_name + "/" + file_name + "/" + file_name + "_featuredon.jpg", quality=85, optimize=True)
-    image_zoom_middle.close()
-
-
+    # Physical map frames and Featured On
+    print("Physical maps:")
+    physical_maps(file_string=file_string,
+                  map_name=map_name,
+                  words_name=words_name)
 
     # Colors ----------------------------------------------------------------------------------------------------------
 
@@ -614,15 +615,15 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
 
 # Setup ---------------------------------------------------------------------------------------------------------------
 
-image_manipulation(file_string='Custom/test_buildings_highres.png',
-                   map_name='Buildings of Test',
+image_manipulation(file_string='USA/manhattan_buildings_highres.png',
+                   map_name='Buildings of Manhattan',
                    words_name=1,
                    inset_zoom=0.13,
                    subsets=75,
                    watermark=False,
 
                    # Text
-                   name=True,
+                   name=False,
                    coordinates='43.0125° N, 83.6875° W',
                    text_size=1,  # 1.4 for states
                    text_nudge=0,  # 800 for states
@@ -633,7 +634,7 @@ image_manipulation(file_string='Custom/test_buildings_highres.png',
                    nine_styles_scale=0.1)  # 0.1, 1.2
 
 # Generate tags and title
-map_name = "Buildings of London"
+map_name = "Waterways of Australia"
 etsy_title(map_name, 1, True)
 etsy_tags(map_name, 1)
 
@@ -641,8 +642,8 @@ etsy_tags(map_name, 1)
 generate_pdf(map_name)
 
 # Physical maps mockups
-physical_maps(file_string="USA/chicago_buildings_highres.png",
-              map_name='Buildings of Chicago',
+physical_maps(file_string="Australia/melbourne_city_highres.png",
+              map_name='Every Road in Melbourne',
               words_name=1)
 
 
