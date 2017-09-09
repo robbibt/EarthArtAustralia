@@ -640,7 +640,7 @@ etsy_tags(map_name, 1)
 # Re-generate PDF
 generate_pdf(map_name)
 
-
+# Physical maps mockups
 physical_maps(file_string="USA/chicago_buildings_highres.png",
               map_name='Buildings of Chicago',
               words_name=1)
