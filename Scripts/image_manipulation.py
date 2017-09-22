@@ -1,3 +1,4 @@
+# coding=utf-8
 __author__ = 'z3287630'
 
 # Import modules
@@ -13,6 +14,7 @@ from apiclient import discovery
 from oauth2client.file import Storage
 from apiclient import errors
 import pandas as pd
+import itertools
 import subprocess
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
@@ -116,15 +118,15 @@ def etsy_tags(title, words_name, physical=False):
     suffixes = ["map", "art", "poster", "print", "gift", "wall art", "map print", "map art", "art print"]
 
     if physical:
-        tag_list = "Physical " + name + " print, " + \
+        tag_list = "Physical print, " + name + ", " + \
                    ", ".join([name + " " + s for s in suffixes])
     else:
-        tag_list = "Printable " + name + ", " + \
+        tag_list = "Printable " + name + ", " + name + ", " + \
                    ", ".join([name + " " + s for s in suffixes]) + \
-                   ", Printable poster, Printable art"
+                   ", Map of " + name
 
     # Print and copy to clipboard
-    print(tag_list)
+    print("    " + tag_list)
     df = pd.DataFrame([tag_list])
     df.to_clipboard(index=False, header=False)
 
@@ -135,7 +137,7 @@ def etsy_title(title, words_name, physical=False):
     name = " ".join(str.split(title)[-words_name:])
 
     if physical:
-        title_string = title + " map print | Physical " + name + " map art, " + name + " print, " + name + " art, " + name + " poster"
+        title_string = title + " map print | Physical " + name + " print, " + name + " poster, " + name + " art, " + name + " map art"
     else:
         title_string = title + " map art | Printable " + name + " map print, " + name + " print, " + name + " art, " + name + " poster"
 
@@ -143,14 +145,17 @@ def etsy_title(title, words_name, physical=False):
         title_string = title_string + ", " + name + " wall art"
         if len(title_string + ", " + name + " gift") < 141:
             title_string = title_string + ", " + name + " gift"
+            if len(title_string + ", Map of " + name) < 141:
+                title_string = title_string + ", Map of " + name
 
     # Print and copy to clipboard
-    print(str(len(title_string)) + " LETTERS: " + title_string)
+    print("    " + title_string)
     df = pd.DataFrame([title_string])
     df.to_clipboard(index=False, header=False)
 
 
-def physical_maps(file_string, map_name, words_name):
+# Physical maps
+def physical_maps(file_string, map_name, words_name, templates):
 
     # Generate tags and title
     etsy_title(title=map_name, words_name=words_name, physical=True)
@@ -189,7 +194,7 @@ def physical_maps(file_string, map_name, words_name):
                      nine_styles=False)
         insert_frame(highres_input=image_highres,
                      size=(730, 730),
-                     location=(1404 - (514 / 2), 1020 - 730),
+                     location=(1404 - (514 / 2), 1015 - 730),
                      frame_path="Scripts/Elements/mockups/draft_overlay.png",
                      frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
                      ouput_path=dir_name + "/" + file_name + "/" + file_name + "_sizes.jpg",
@@ -237,6 +242,128 @@ def physical_maps(file_string, map_name, words_name):
     except:
         print("Cannot create 'Featured on'")
 
+    # Generate template files with Printful safe printing area overlay
+    if templates:
+
+        print("Generating templates")
+
+        # Rotate template files if horizontal
+        if width > height:
+            rotate_amount = 90
+        else:
+            rotate_amount = 0
+
+        # For 24 x 36
+        template_image = image_highres.copy()
+        template_small = Image.open("D:/Google Drive/EarthArtAustralia/Printful/Posters/24x36/24x36.png")
+        template_small = template_small.rotate(rotate_amount, expand=True)
+        template_image.thumbnail((max(template_small.size), max(template_small.size)))
+        template_small_overlay = template_small.copy()
+        template_small.paste(template_image, ((template_small.width - template_image.width)/2,
+                                              template_small.height - template_image.height), mask=template_image)
+        template_small.paste(template_small_overlay, (0, 0), mask=template_small_overlay)
+        template_small.thumbnail((1200, 1200))
+        template_small.save(dir_name + "/" + file_name + "/" + file_name + "_template24x36.jpg", quality=20, optimize=True)
+
+        # For 18 x 24
+        template_small = Image.open("D:/Google Drive/EarthArtAustralia/Printful/Posters/18x24/18x24.png")
+        template_small = template_small.rotate(rotate_amount, expand=True)
+        template_image.thumbnail((min(template_small.size)*1.4189, min(template_small.size)*1.4189))
+        template_small_overlay = template_small.copy()
+        template_small.paste(template_image, ((template_small.width - template_image.width)/2,
+                                              template_small.height - template_image.height), mask=template_image)
+        template_small.paste(template_small_overlay, (0, 0), mask=template_small_overlay)
+        template_small.thumbnail((1200, 1200))
+        template_small.save(dir_name + "/" + file_name + "/" + file_name + "_template18x24.jpg", quality=20, optimize=True)
+
+        # For 12 x 18
+        template_small = Image.open("D:/Google Drive/EarthArtAustralia/Printful/Posters/12x18/12x18.png")
+        template_small = template_small.rotate(rotate_amount, expand=True)
+        template_image.thumbnail((max(template_small.size), max(template_small.size)))
+        template_small_overlay = template_small.copy()
+        template_small.paste(template_image, ((template_small.width - template_image.width)/2,
+                                              template_small.height - template_image.height), mask=template_image)
+        template_small.paste(template_small_overlay, (0, 0), mask=template_small_overlay)
+        template_small.thumbnail((1200, 1200))
+        template_small.save(dir_name + "/" + file_name + "/" + file_name + "_template12x18.jpg", quality=20, optimize=True)
+        template_small.close()
+
+
+# Add map titles
+def map_title(image_highres, file_string, title_name, title_nudge, title_size, title_font, coordinates=False,
+              white_manual=False):
+
+    # Define image size
+    width, height = image_highres.size
+
+    # Set up layer for drawing
+    draw = ImageDraw.Draw(image_highres)
+
+    # Add in white borders
+    if white_manual is False:
+        draw.rectangle([0, (height - 1350 - title_nudge), width, height], fill="#FFFFFF")
+    else:
+        print("Using manual white overlay")
+        draw.rectangle([0, (height - white_manual), width, height], fill="#FFFFFF")
+
+    # Set up fonts
+    title_font = ImageFont.truetype(title_font, int(800 * title_size))
+    coords_font = ImageFont.truetype("Scripts/Fonts/Abel-Regular.ttf", int(370 * title_size))
+
+    # Set up city and coordinate strings for plotting (using widths to centre)
+    title_width, title_height = draw.textsize(title_name, font=title_font)
+    draw.text(((width - title_width) / 2, (height - 1060 - title_nudge)), title_name, (0, 0, 0), font=title_font)
+
+    # If coords
+    if coordinates:
+
+        coords_split = coordinates.replace("\xc2", "").split(", ")
+
+        if len(coords_split[0]) > len(coords_split[1]):
+            coords_split[1] = coords_split[1] + "  "
+
+        elif len(coords_split[0]) < len(coords_split[1]):
+            coords_split[0] = "  " + coords_split[0]
+
+        # Combine coordinate string and add spaces to space around title, and between letters for kerning
+        coords_new = coords_split[0] + " " * (title_width / int(173 * title_size) + 5) + coords_split[1]
+        coords_new = " ".join(coords_new)
+        coords_width, coords_height = draw.textsize(coords_new, font=coords_font)
+        draw.text(((width - coords_width) / 2 + 10, (height - 965 - title_nudge)), coords_new, (0, 0, 0),
+                  font=coords_font)
+
+    # Export to file
+    image_highres.save(file_string, optimize=True)
+
+    # Return image
+    return image_highres
+
+
+# Wedding
+def wedding_map(file_string, couple_name, couple_size, couple_nudge, couple_font, date_name, date_size, date_nudge, date_font, white_manual=False):
+
+    image_highres = Image.open(file_string)
+
+    print("Adding names")
+    image_highres = map_title(image_highres,
+                              file_string=file_string,
+                              title_name=couple_name,
+                              title_size=couple_size,
+                              title_nudge=couple_nudge,
+                              title_font=couple_font,
+                              white_manual=white_manual)
+
+    print("Adding dates")
+    image_highres = map_title(image_highres,
+                              file_string=file_string,
+                              title_name=date_name,
+                              title_size=date_size,
+                              title_nudge=date_nudge,
+                              title_font=date_font,
+                              white_manual=0)
+
+    image_highres.close()
+
 
 # Generate PDF
 def generate_pdf(map_name):
@@ -248,9 +375,10 @@ def generate_pdf(map_name):
         print("Error generating PDF")
 
 
+
 # Entire function -----------------------------------------------------------------------------------------------------
-def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, watermark, name, coordinates,
-                       text_size, text_nudge, nine_styles, nine_styles_scale, name_text=False):
+def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark, name, title_size, title_nudge,
+                       nine_styles, nine_styles_scale, pdf, blue=False, coordinates=False, name_text=False):
 
     # Generate tags and title
     print("Printable maps:")
@@ -285,37 +413,14 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
         if not name_text:
             name_text = " ".join(str.split(map_name)[-words_name:]).upper()
 
-        # Set up layer for drawing
-        draw = ImageDraw.Draw(image_highres)
-
-        # Add in white borders
-        draw.rectangle([0, (height - 1350 - text_nudge), width, height], fill="#FFFFFF")
-
-        # Set up fonts
-        city_font = ImageFont.truetype("Scripts/Fonts/ADAM_kerning.ttf", int(800 * text_size))
-        coords_font = ImageFont.truetype("Scripts/Fonts/Abel-Regular.ttf", int(370 * text_size))
-
-        # Set up city and coordinate strings for plotting (using widths to centre)
-        city_width, city_height = draw.textsize(name_text, font=city_font)
-        coords_split = coordinates.replace("\xc2", "").split(", ")
-
-        if len(coords_split[0]) > len(coords_split[1]):
-            coords_split[1] = coords_split[1] + "  "
-
-        elif len(coords_split[0]) < len(coords_split[1]):
-            coords_split[0] = "  " + coords_split[0]
-
-        # Combine coordinate string and add spaces to space around title, and between letters for kerning
-        coords_new = coords_split[0] + " " * (city_width / int(173 * text_size) + 5) + coords_split[1]
-        coords_new = " ".join(coords_new)
-        coords_width, coords_height = draw.textsize(coords_new, font=coords_font)
-
-        # Add city name and coordinates
-        draw.text(((width-city_width)/2, (height - 1060 - text_nudge)), name_text, (0, 0, 0), font=city_font)
-        draw.text(((width-coords_width)/2 + 10, (height - 960 - text_nudge)), coords_new, (0, 0, 0), font=coords_font)
-
-        # Export to file
-        image_highres.save(file_string, optimize=True)
+        image_highres = map_title(image_highres,
+                                  file_string=file_string,
+                                  title_name=name_text,
+                                  title_nudge=title_nudge,
+                                  title_size=title_size,
+                                  title_font="Scripts/Fonts/ADAM_kerning.ttf",
+                                  coordinates=coordinates,
+                                  white_manual=True)
 
     # Generate low resolution versions --------------------------------------------------------------------------------
 
@@ -349,7 +454,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
                      frame_path="Scripts/Elements/frame_hor_" + str(random.randint(1, 4)) + ".png",
                      frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
                      ouput_path=dir_name + "/" + file_name + "/" + file_name + "_frame.jpg",
-                     nine_styles=nine_styles)
+                     nine_styles=True)
 
     # Square frames
     elif width == height:
@@ -390,15 +495,15 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
     image_zoom.thumbnail((3000, 2500), Image.ANTIALIAS)
     image_zoom.save(dir_name + "/" + file_name + "/" + file_name + "_zoom_2.jpg", quality=85, optimize=True)
 
-    # Save random insets
-    for zoom in range(3, subsets + 1):
-        x = random.randint(int(width * 0.2), int(width * 0.8))
-        y = random.randint(int(height * 0.2), int(height * 0.8))
+    x_dims = range(int(width * 0.14), int(width * 0.86), 2000)
+    y_dims = range(int(height * 0.14), int(height * 0.86), 2000)
+
+    for zoom, (x, y) in enumerate(itertools.product(x_dims, y_dims)):
         image_zoom = image_highres.crop((x - int(max(width, height) * (inset_zoom * 0.5)),
                                          y - int(max(width, height) * (inset_zoom * 0.5)),
                                          x + int(max(width, height) * (inset_zoom * 0.5)),
                                          y + int(max(width, height) * (inset_zoom * 0.5))))
-        image_zoom.save(dir_name + "/" + file_name + "/" + file_name + "_zoom_" + str(zoom) + ".jpg", quality=85, optimize=True)
+        image_zoom.save(dir_name + "/" + file_name + "/" + file_name + "_zoom_" + str(zoom + 3) + ".jpg", quality=85, optimize=True)
         image_zoom.close()
 
     # Physical map frames and Featured On
@@ -411,21 +516,29 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
 
     if nine_styles:
 
+        print("Nine styles:")
         output_canvas = Image.open("Scripts/Elements/frame_nine_styles.png")
+
+        # Change blue on white to black on white for blue maps
+        if blue:
+            bw_blue_hor = ["#000000", "#FFFFFF", "#000000", 1.3, 0.320, 0.010, 0.088, "blackonwhite"]
+            bw_blue_vert = ["#000000", "#FFFFFF", "#000000", 1.3, 0.440, 0.752, 0.092, "blackonwhite"]
+        else:
+            bw_blue_hor = ["#000099", "#FFFFFF", "#000000", 1.3, 0.320, 0.010, 0.088, "blueonwhite"]
+            bw_blue_vert = ["#000099", "#FFFFFF", "#000000", 1.3, 0.440, 0.752, 0.092, "blueonwhite"]
 
         if width > height:
 
             # Horizontal arrangement
-            color_parameters = [ ["#000099", "#FFFFFF", "#000000", 1.3, 0.320, 0.010, 0.088, "blueonwhite"],
-                                # ["#000000", "#FFFFFF", "#000000", 1.3, 0.320, 0.010, 0.088, "blackonwhite"],
-                                ["#FFFFFF", "#006600", "",        1.3, 0.320, 0.339, 0.088, "whiteongreen"],
-                                ["#006600", "#FFFFFF", "#000000", 1.4, 0.320, 0.668, 0.088, "greenonwhite"],
-                                ["#FFFFFF", "#000000", "",        1.3, 0.320, 0.010, 0.392, "whiteonblack"],
-                                ["#FFFFFF", "#000000", "",        1.0, 0.320, 0.339, 0.392, "lowres"],
-                                ["#FFFFFF", "#000099", "",        1.3, 0.320, 0.668, 0.392, "whiteonblue"],
-                                ["#0c6b71", "#FFFFFF", "#000000", 1.4, 0.320, 0.010, 0.695, "tealonwhite"],
-                                ["#FFFFFF", "#990000", "",        1.3, 0.320, 0.339, 0.695, "whiteonred"],
-                                ["#990000", "#FFFFFF", "#000000", 1.4, 0.320, 0.668, 0.695, "redonwhite"]]
+            color_parameters = [bw_blue_hor,
+                               ["#FFFFFF", "#006600", "",        1.3, 0.320, 0.339, 0.088, "whiteongreen"],
+                               ["#006600", "#FFFFFF", "#000000", 1.4, 0.320, 0.668, 0.088, "greenonwhite"],
+                               ["#FFFFFF", "#000000", "",        1.3, 0.320, 0.010, 0.392, "whiteonblack"],
+                               ["#FFFFFF", "#000000", "",        1.0, 0.320, 0.339, 0.392, "lowres"],
+                               ["#FFFFFF", "#000099", "",        1.3, 0.320, 0.668, 0.392, "whiteonblue"],
+                               ["#0c6b71", "#FFFFFF", "#000000", 1.4, 0.320, 0.010, 0.695, "tealonwhite"],
+                               ["#FFFFFF", "#990000", "",        1.3, 0.320, 0.339, 0.695, "whiteonred"],
+                               ["#990000", "#FFFFFF", "#000000", 1.4, 0.320, 0.668, 0.695, "redonwhite"]]
 
         else:
 
@@ -433,8 +546,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
             color_parameters = [["#FFFFFF", "#000000", "",        1.3, 0.440, 0.010, 0.092, "whiteonblack"],
                                 ["#0c6b71", "#FFFFFF", "#000000", 1.4, 0.440, 0.257, 0.092, "tealonwhite"],
                                 ["#FFFFFF", "#006600", "",        1.3, 0.440, 0.504, 0.092, "whiteongreen"],
-                                ["#000099", "#FFFFFF", "#000000", 1.3, 0.440, 0.752, 0.092, "blueonwhite"],
-                                # ["#000000", "#FFFFFF", "#000000", 1.3, 0.440, 0.752, 0.092, "blackonwhite"],
+                                 bw_blue_vert,
                                 ["#990000", "#FFFFFF", "#000000", 1.4, 0.440, 0.010, 0.542, "redonwhite"],
                                 ["#FFFFFF", "#000099", "",        1.3, 0.440, 0.257, 0.542, "whiteonblue"],
                                 ["#006600", "#FFFFFF", "#000000", 1.4, 0.440, 0.504, 0.542, "greenonwhite"],
@@ -450,7 +562,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
                 contrast_scaled = (contrast - 1.0) * nine_styles_scale + 1
 
                 # Add color to image
-                print("Generating '" + name + "'")
+                print("    Generating '" + name + "'")
                 colorised = colorise_image(image_highres, black_color=black_color,
                                            white_color=white_color, contrast=contrast_scaled)
 
@@ -458,7 +570,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
                 if len(text_color) > 0:
 
                     # Copy bottom of image, convert to greyscale then paste back
-                    box = (0, (height - 1350 - text_nudge), width, height)
+                    box = (0, (height - 1350 - title_nudge), width, height)
                     region = colorised.crop(box)
                     region = colorise_image(region, black_color=text_color, white_color=white_color)
                     colorised.paste(region, box)
@@ -468,7 +580,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
 
             else:
                 # If file already exists, load from either image directory or 'Style' subdirectory
-                print("Loading '" + name + "' from file")
+                print("    Loading '" + name + "' from file")
                 colorised = Image.open((glob.glob(dir_name + "/" + file_name + "/" + file_name + "_" + name + '.*') +
                                         glob.glob(dir_name + "/" + file_name + "/" + file_name + "_styles/" + file_name +
                                                   "_" + name + '.*'))[0])
@@ -543,6 +655,28 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
                             "National Hydrography Dataset available on the World Wide Web (http://nhd.usgs.gov), "
                             "accessed 20 April 2016).",
 
+            'waterwayseu': "Map created with QGIS using spatial vector GIS data from 1:250000 scale European "
+                           "Environment Agency Catchments and Rivers Network System datasets. Rivers are weighted "
+                           "from first order streams (i.e. tiny tributaries or headwaters at the very beginning of a "
+                           "river system) to major rivers into which thousands of smaller streams flow (e.g. the "
+                           "Danube and Volga Rivers). Source dataset: European Environment Agency (EEA). 2012. EEA "
+                           "Catchments and Rivers Network System (ECRINS) v1.1. Available from "
+                           "http://www.eea.europa.eu/data-and-maps/data/european-catchments-and-riversnetwork",
+
+            'waterwaysca': "Map created with QGIS using GIS data for streams and waterbodies from Government of "
+                           "Canada, Natural Resources Canada, Earth Sciences Sector. 2016. Lakes and rivers in "
+                           "Canada CanVec Hydro Features. Ottawa, ON: Department of Natural Resources Canada. "
+                           "Data freely available (http://geogratis.gc.ca/api/en/nrcan-rncan/ess-sst/93b9a6e6-1264"
+                           "-47f6-ad55-c60f842c550d.html) and licensed under the Open Government Licence - Canada: "
+                           "http://open.canada.ca/en/open-government-licence-canada",
+
+            'waterwaysnz': "Map created with QGIS using GIS data for rivers and streams from the New Zealand Topo50, "
+                           "Topo250 and Topo500 map series. The Topo50, Topo250 and Topo500 map series provides "
+                           "topographic mapping for the New Zealand mainland and Chatham Islands, from 1:50,000 to "
+                           "1:500,000 scale. Further information: www.linz.govt.nz/topography/topo-maps/topo250. "
+                           "Datasets available under a Creative Commons Attribution 3.0 New Zealand license. Full "
+                           "terms at https://creativecommons.org/licenses/by/3.0/nz/.",
+
             'waterwaysau': "Map created with open-source QGIS (http://www.qgis.org/en/site/), using a "
                                    "combination of freely available Commonwealth of Australia (Bureau of Meteorology) "
                                    "2016 Geofabric river data (http://www.bom.gov.au/water/geofabric/) and GA Geodata "
@@ -596,16 +730,18 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
         print("No data added to excel")
 
     # Generate PDF ----------------------------------------------------------------------------------------------------
-    try:
+    if pdf:
 
-        # If description exists, create PDF
-        default_desc = desc[map_desc]
-        generate_pdf(map_name)
+        try:
 
-    except:
+            # If description exists, create PDF
+            default_desc = desc[map_desc]
+            generate_pdf(map_name)
 
-        # If no default description
-        print("Generating PDF failed; no default description")
+        except:
+
+            # If no default description
+            print("Generating PDF failed; no default description")
 
     # Close files -----------------------------------------------------------------------------------------------------
 
@@ -615,37 +751,62 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, subsets, w
 
 # Setup ---------------------------------------------------------------------------------------------------------------
 
-image_manipulation(file_string='USA/manhattan_buildings_highres.png',
-                   map_name='Buildings of Manhattan',
+image_manipulation(file_string='Europe/hamburg_buildings_highres.png',
+                   map_name='Buildings of Hamburg',
                    words_name=1,
-                   inset_zoom=0.13,
-                   subsets=75,
+                   inset_zoom=0.12,
                    watermark=False,
 
-                   # Text
+                   # Title
                    name=False,
-                   coordinates='43.0125° N, 83.6875° W',
-                   text_size=1,  # 1.4 for states
-                   text_nudge=0,  # 800 for states
+                   title_size=1,  # 1.4 for states
+                   title_nudge=0,  # 800 for states
+                   coordinates='30.4583° N, 91.1403° W',
                    # name_text='',
 
                    # Styles
                    nine_styles=True,
-                   nine_styles_scale=0.1)  # 0.1, 1.2
+                   nine_styles_scale=0.1,  # 0.1, 1.2
+                   blue=False,
+
+                   # Generate PDF?
+                   pdf=True)
 
 # Generate tags and title
-map_name = "Waterways of Australia"
-etsy_title(map_name, 1, True)
-etsy_tags(map_name, 1)
+map_name = "Every Road in Vancouver"
+etsy_title(map_name, 1, False)
+etsy_tags(map_name, 1, False)
 
 # Re-generate PDF
 generate_pdf(map_name)
 
 # Physical maps mockups
-physical_maps(file_string="Australia/melbourne_city_highres.png",
-              map_name='Every Road in Melbourne',
-              words_name=1)
+physical_maps(file_string="Canada/vancouver_city_highres.png",
+              map_name=map_name,
+              words_name=1,
+              templates=True)
 
+wedding_map(file_string="Custom/AlexandraJoshua/alexandrajoshua_wedding_highres.png",
+            couple_name="ALEXANDRA + JOSHUA",
+            couple_size=1.2,
+            couple_nudge=1000,
+            couple_font="Scripts/Fonts/ADAM_kerning.ttf",
+            date_name="10.06.2017",
+            date_size=0.6,
+            date_nudge=40,
+            date_font="Scripts/Fonts/Autumn in November.ttf",
+            white_manual=2500)
+
+wedding_map(file_string="Custom/test_buildings_highres3.png",
+            couple_name=" Adam & Eve",
+            couple_size=1.9,
+            couple_nudge=1450,
+            couple_font="Scripts/Fonts/trendsetter-Regular.ttf",
+            date_name="15 July 2017",
+            date_size=0.55,
+            date_nudge=-150,
+            date_font="Scripts/Fonts/ADAM_kerning.ttf",
+            white_manual=2500)
 
 # import requests
 # url = 'https://maps.googleapis.com/maps/api/geocode/json'
