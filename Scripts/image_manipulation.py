@@ -16,6 +16,7 @@ from apiclient import errors
 import pandas as pd
 import itertools
 import subprocess
+import textwrap
 warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 # Working directory
@@ -78,8 +79,39 @@ def colorise_image(src, black_color ="#FFFFFF", white_color ="#000000", contrast
     return result
 
 
+# Produces output colorised images using colorise_image
+def custom_color(highres_input, black_color, white_color, text_color, contrast, title_nudge, name,
+                 styles_path):
+    # If highres_input is an image, else if a path:
+    if type(highres_input) is not Image.Image:
+        highres_input = Image.open(highres_input)
+
+    # Define image size
+    width, height = highres_input.size
+
+    # Rescale contrast
+    contrast_scaled = (contrast - 1.0) * nine_styles_scale + 1
+
+    # Add color to image
+    print("    Generating '" + name + "'")
+    colorised = colorise_image(highres_input, black_color=black_color,
+                               white_color=white_color, contrast=contrast_scaled)
+
+    # Set city title to black and white
+    if len(text_color) > 0:
+        # Copy bottom of image, convert to greyscale then paste back
+        box = (0, (height - 1350 - title_nudge), width, height)
+        region = colorised.crop(box)
+        region = colorise_image(region, black_color=text_color, white_color=white_color)
+        colorised.paste(region, box)
+
+    colorised.save(styles_path + styles_path.split("/")[1] + "_" + name + ".png", quality=85, optimize=True)
+
+    return colorised
+
+
 # Insert thumbnail into frame images
-def insert_frame(highres_input, size, location, frame_path, frame_ninestyles, ouput_path, nine_styles):
+def insert_frame(highres_input, size, location, frame_path, ouput_path):
 
     image_frame = highres_input.copy()
     image_frame.thumbnail(size, Image.ANTIALIAS)
@@ -96,19 +128,123 @@ def insert_frame(highres_input, size, location, frame_path, frame_ninestyles, ou
     etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
     etsy_frame.save(ouput_path)
 
-    # Add "9 styles" banner
-    if nine_styles:
-        etsy_ninestyles = Image.open(frame_ninestyles)
-        etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
-        etsy_frame.save(ouput_path[:-4] + "_ninestyles.jpg")
+    return etsy_frame
 
-        # Additional white on black frame
-        etsy_frame = colorise_image(etsy_frame, black_color="#FFFFFF", white_color="#000000", contrast=1)
-        etsy_frame = ImageEnhance.Brightness(etsy_frame).enhance(1.07)
-        etsy_frame = ImageEnhance.Contrast(etsy_frame).enhance(1.07)
-        etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
-        etsy_frame.paste(etsy_ninestyles, (0, 0), etsy_ninestyles)
-        etsy_frame.save(ouput_path[:-4] + "_ninestyles_bw.jpg")
+
+# uses insert_frame to create cover images
+def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True):
+
+    # If highres_input is an image, else if a path:
+    if type(highres_input) is not Image.Image:
+        highres_input = Image.open(highres_input)
+
+    # Define image size
+    width, height = highres_input.size
+
+    # Horizontal frames
+    if width > height:
+
+        # If nine styles, use nine styles frame
+        if nine_styles:
+            frame_path="Scripts/Elements/frame_hor_1_v3.png"
+        else:
+            frame_path="Scripts/Elements/frame_hor_1_nostyles.png"
+
+
+        cover_image = insert_frame(highres_input=highres_input,
+                     size=(1051, 1051),
+                     location=(693, 93),
+                     frame_path=frame_path,
+                     ouput_path=ouput_path)
+
+        # Set up layer for drawing
+        draw = ImageDraw.Draw(cover_image)
+        lines = textwrap.wrap(map_name, width=13)
+
+        # Set up fonts
+        font = ImageFont.truetype("Scripts/Fonts/ADAM_kerning.ttf", 130)
+
+        # Add name to cover plot
+        line1_width, line1_height = draw.textsize(lines[0], font=font)
+        line2_width, line2_height = draw.textsize(lines[1], font=font)
+        draw.text(((680 + (1075 - line1_width) / 2), 985), lines[0], (0, 0, 0), font=font)
+        draw.text(((680 + (1075 - line2_width) / 2), 985 + line1_height * 1.3), lines[1], (0, 0, 0), font=font)
+
+        # Old style frame
+        insert_frame(highres_input=highres_input,
+                     size=(1200, 666),
+                     location=(128, 128),
+                     frame_path="Scripts/Elements/frame_hor_" + str(random.randint(1, 3)) + ".png",
+                     ouput_path=ouput_path[:-9] + "frame.jpg")
+
+    # Vertical frames
+    else:
+
+        # If nine styles, use nine styles frame
+        if nine_styles:
+            frame_path="Scripts/Elements/frame_vert_1_v3.png"
+        else:
+            frame_path="Scripts/Elements/frame_vert_1_nostyles.png"
+
+        cover_image = insert_frame(highres_input=highres_input,
+                     size=(1150, 1150),
+                     location=(923, 92),
+                     frame_path=frame_path,
+                     ouput_path=ouput_path)
+
+        # Set up layer for drawing
+        draw = ImageDraw.Draw(cover_image)
+        lines = textwrap.wrap(map_name, width=11)
+
+        # Set up fonts
+        font = ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", 95)
+
+        # If two lines, add name to image
+        if len(lines) < 3:
+
+            # Add name to cover image
+            line1_width, line1_height = draw.textsize(lines[0], font=font)
+            line2_width, line2_height = draw.textsize(lines[1], font=font)
+            draw.text(((221 + (620 - line1_width) / 2), 75), lines[0], (0, 0, 0), font=font)
+            draw.text(((221 + (620 - line2_width) / 2), 75 + line1_height * 1.35), lines[1], (0, 0, 0), font=font)
+
+            # Add overlay to improve spacing if two lines
+            overlay = Image.open("Scripts/Elements/frame_vert_1_v3_overlay.png")
+            cover_image.paste(overlay, (0, 0), overlay)
+
+
+        else:
+
+            # Set up fonts
+            font_small = ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", 76)
+            lines_small = textwrap.wrap(map_name, width=13)
+            lines_large = textwrap.wrap(" ".join(lines_small[1:]), width=11)
+
+            # Add name to cover image
+            line1_width, line1_height = draw.textsize(lines_small[0], font=font_small)
+            line2_width, line2_height = draw.textsize(lines_large[0], font=font)
+            draw.text(((221 + (620 - line1_width) / 2), 65), lines_small[0], (0, 0, 0), font=font_small)
+            draw.text(((221 + (620 - line2_width) / 2), 65 + line1_height * 1.28), lines_large[0], (0, 0, 0), font=font)
+
+            try:
+                line3_width, line3_height = draw.textsize(lines_large[1], font=font)
+                draw.text(((221 + (620 - line3_width) / 2), 65 + line1_height * 2.75), lines_large[1], (0, 0, 0), font=font)
+
+            except:
+
+                # Add overlay to improve spacing if two lines
+                overlay = Image.open("Scripts/Elements/frame_vert_1_v3_overlay.png")
+                cover_image.paste(overlay, (0, 0), overlay)
+
+        # Old style frame
+        insert_frame(highres_input=highres_input,
+                     size=(643, 1175),
+                     location=(277, 137),
+                     frame_path="Scripts/Elements/frame_vert_" + str(random.randint(1, 3)) + ".png",
+                     ouput_path=ouput_path[:-9] + "frame.jpg")
+
+    # Save to file
+    cover_image.save(ouput_path, optimize=True)
 
 
 # Generate tags
@@ -137,9 +273,9 @@ def etsy_title(title, words_name, physical=False):
     name = " ".join(str.split(title)[-words_name:])
 
     if physical:
-        title_string = title + " map print | Physical " + name + " print, " + name + " poster, " + name + " art, " + name + " map art"
+        title_string = title + " print | Physical " + name + " map print, " + name + " poster, " + name + " art, " + name + " map art"
     else:
-        title_string = title + " map art | Printable " + name + " map print, " + name + " print, " + name + " art, " + name + " poster"
+        title_string = name + " map print, Printable " + name + " map art, " + name + " print, " + name + " art, " + name + " poster"
 
     if len(title_string + ", " + name + " wall art") < 141:
         title_string = title_string + ", " + name + " wall art"
@@ -157,9 +293,11 @@ def etsy_title(title, words_name, physical=False):
 # Physical maps
 def physical_maps(file_string, map_name, words_name, templates):
 
+    if map_name is not "":
+
     # Generate tags and title
-    etsy_title(title=map_name, words_name=words_name, physical=True)
-    etsy_tags(title=map_name, words_name=words_name, physical=True)
+        etsy_title(title=map_name, words_name=words_name, physical=True)
+        etsy_tags(title=map_name, words_name=words_name, physical=True)
 
     # Import image
     image_highres = Image.open(file_string)
@@ -180,25 +318,24 @@ def physical_maps(file_string, map_name, words_name, templates):
                      size=(1153, 1153),
                      location=(668 - (int(1153 / 1.4189) / 2), 1240 - 1153),
                      frame_path="Scripts/Elements/mockups/mockup_template_vert" + x + ".png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
-                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_mockup.jpg",
-                     nine_styles=False)
+                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_mockup.jpg")
 
         # Size frames
         insert_frame(highres_input=image_highres,
-                     size=(1030, 1030),
-                     location=(620 - (int(1030 / 1.4189) / 2), 1360 - 1030),
-                     frame_path="Scripts/Elements/mockups/mockup_sizes_vert.png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
-                     ouput_path="Scripts/Elements/mockups/draft_overlay.png",
-                     nine_styles=False)
+                     size=(1040, 1040),
+                     location=(440 - (int(1040 / 1.4189) / 2), 1200 - 1040),
+                     frame_path="Scripts/Elements/mockups/mockup_sizes_vert_v2.png",
+                     ouput_path="Scripts/Elements/mockups/draft_overlay.png")
         insert_frame(highres_input=image_highres,
-                     size=(730, 730),
-                     location=(1404 - (514 / 2), 1015 - 730),
+                     size=(737, 737),
+                     location=(1155 - (int(737 / 1.4189) / 2), 858 - 737),
                      frame_path="Scripts/Elements/mockups/draft_overlay.png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
-                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_sizes.jpg",
-                     nine_styles=False)
+                     ouput_path="Scripts/Elements/mockups/draft_overlay.png")
+        insert_frame(highres_input=image_highres,
+                     size=(525, 525),
+                     location=(1705 - (int(525 / 1.4189) / 2), 676 - 525),
+                     frame_path="Scripts/Elements/mockups/draft_overlay.png",
+                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_sizes.jpg")
 
     # Horizontal
     if width > height:
@@ -208,25 +345,24 @@ def physical_maps(file_string, map_name, words_name, templates):
                      size=(1153, 1153),
                      location=(882 - int(1153 / 2), 850 - int(1153 / 1.4189)),
                      frame_path="Scripts/Elements/mockups/mockup_template_hor" + x + ".png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
-                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_mockup.jpg",
-                     nine_styles=False)
+                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_mockup.jpg")
 
         # Size frames
         insert_frame(highres_input=image_highres,
-                     size=(1030, 1030),
-                     location=(587 - int(1030 / 2), 753 - int(1030 / 1.4189)),
-                     frame_path="Scripts/Elements/mockups/mockup_sizes_hor.png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
-                     ouput_path="Scripts/Elements/mockups/draft_overlay.png",
-                     nine_styles=False)
+                     size=(1038, 1038),
+                     location=(587 - int(1038 / 2), 757 - int(1038 / 1.4189)),
+                     frame_path="Scripts/Elements/mockups/mockup_sizes_hor_v2.png",
+                     ouput_path="Scripts/Elements/mockups/draft_overlay.png")
         insert_frame(highres_input=image_highres,
-                     size=(735, 735),
-                     location=(1560 - int(735 / 2), 578 - int(735 / 1.4189)),
+                     size=(743, 743),
+                     location=(1560 - int(743 / 2), 580 - int(743 / 1.4189)),
                      frame_path="Scripts/Elements/mockups/draft_overlay.png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
-                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_sizes.jpg",
-                     nine_styles=False)
+                     ouput_path="Scripts/Elements/mockups/draft_overlay.png")
+        insert_frame(highres_input=image_highres,
+                     size=(533, 533),
+                     location=(333 - int(533 / 2), 1204 - int(533 / 1.4189)),
+                     frame_path="Scripts/Elements/mockups/draft_overlay.png",
+                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_sizes.jpg")
 
     try:
 
@@ -287,6 +423,9 @@ def physical_maps(file_string, map_name, words_name, templates):
         template_small.thumbnail((1200, 1200))
         template_small.save(dir_name + "/" + file_name + "/" + file_name + "_template12x18.jpg", quality=20, optimize=True)
         template_small.close()
+
+    # Close image
+    image_highres.close()
 
 
 # Add map titles
@@ -420,7 +559,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
                                   title_size=title_size,
                                   title_font="Scripts/Fonts/ADAM_kerning.ttf",
                                   coordinates=coordinates,
-                                  white_manual=True)
+                                  white_manual=False)
 
     # Generate low resolution versions --------------------------------------------------------------------------------
 
@@ -444,39 +583,9 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
         image_lowres.save(dir_name + "/" + file_name + "/" + file_name + "_watermark.jpg", quality=85, optimize=True)
 
     # Frame -----------------------------------------------------------------------------------------------------------
+    etsy_frame(highres_input=image_highres, ouput_path=dir_name + "/" + file_name + "/" + file_name + "_cover.jpg",
+               map_name=map_name, nine_styles=nine_styles)
 
-    # Horizontal frames
-    if width > height:
-
-        insert_frame(highres_input=image_highres,
-                     size=(1200, 666),
-                     location=(128, 128),
-                     frame_path="Scripts/Elements/frame_hor_" + str(random.randint(1, 4)) + ".png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
-                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_frame.jpg",
-                     nine_styles=True)
-
-    # Square frames
-    elif width == height:
-
-        insert_frame(highres_input=image_highres,
-                     size=(781, 781),
-                     location=(216, 74),
-                     frame_path="Scripts/Elements/frame_sq_" + str(random.randint(1, 4)) + ".png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_hor.png",
-                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_frame.jpg",
-                     nine_styles=nine_styles)
-
-    # Vertical frames
-    elif width < height:
-
-        insert_frame(highres_input=image_highres,
-                     size=(643, 1175),
-                     location=(277, 137),
-                     frame_path="Scripts/Elements/frame_vert_" + str(random.randint(1, 4)) + ".png",
-                     frame_ninestyles="Scripts/Elements/frame_9styles_vert.png",
-                     ouput_path=dir_name + "/" + file_name + "/" + file_name + "_frame.jpg",
-                     nine_styles=nine_styles)
 
     # Subsets ---------------------------------------------------------------------------------------------------------
 
@@ -510,7 +619,8 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
     print("Physical maps:")
     physical_maps(file_string=file_string,
                   map_name=map_name,
-                  words_name=words_name)
+                  words_name=words_name,
+                  templates=False)
 
     # Colors ----------------------------------------------------------------------------------------------------------
 
@@ -536,7 +646,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
                                ["#FFFFFF", "#000000", "",        1.3, 0.320, 0.010, 0.392, "whiteonblack"],
                                ["#FFFFFF", "#000000", "",        1.0, 0.320, 0.339, 0.392, "lowres"],
                                ["#FFFFFF", "#000099", "",        1.3, 0.320, 0.668, 0.392, "whiteonblue"],
-                               ["#0c6b71", "#FFFFFF", "#000000", 1.4, 0.320, 0.010, 0.695, "tealonwhite"],
+                               ["#ff8a00", "#FFFFFF", "#000000", 1.3, 0.320, 0.010, 0.695, "orangeonwhite"],
                                ["#FFFFFF", "#990000", "",        1.3, 0.320, 0.339, 0.695, "whiteonred"],
                                ["#990000", "#FFFFFF", "#000000", 1.4, 0.320, 0.668, 0.695, "redonwhite"]]
 
@@ -544,7 +654,7 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
 
             # Vertical arrangement
             color_parameters = [["#FFFFFF", "#000000", "",        1.3, 0.440, 0.010, 0.092, "whiteonblack"],
-                                ["#0c6b71", "#FFFFFF", "#000000", 1.4, 0.440, 0.257, 0.092, "tealonwhite"],
+                                ["#ff8a00", "#FFFFFF", "#000000", 1.3, 0.440, 0.257, 0.092, "orangeonwhite"],
                                 ["#FFFFFF", "#006600", "",        1.3, 0.440, 0.504, 0.092, "whiteongreen"],
                                  bw_blue_vert,
                                 ["#990000", "#FFFFFF", "#000000", 1.4, 0.440, 0.010, 0.542, "redonwhite"],
@@ -552,38 +662,30 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
                                 ["#006600", "#FFFFFF", "#000000", 1.4, 0.440, 0.504, 0.542, "greenonwhite"],
                                 ["#FFFFFF", "#990000", "",        1.3, 0.440, 0.752, 0.542, "whiteonred"]]
 
+            # # Vertical arrangement for custom Palestine
+            # color_parameters = [["#FFFFFF", "#000000", "",       1.3, 0.440, 0.010, 0.092, "whiteonblack"],
+            #                     ["#000000", "#777e4d", "",        1.4, 0.440, 0.257, 0.092, "blackonarmygreen"],
+            #                     ["#FFFFFF", "#4b5320", "",        1.3, 0.440, 0.504, 0.092, "whiteonarmygreen"],
+            #                      bw_blue_vert,
+            #                     ["#4b5320", "#FFFFFF", "#000000", 1.4, 0.440, 0.504, 0.542, "armygreenonwhite"],
+            #                     ["#0c6b71", "#FFFFFF", "#000000", 1.4, 0.440, 0.257, 0.092, "tealonwhite"],
+            #                     ["#FFFFFF", "#006600", "",        1.3, 0.440, 0.504, 0.092, "whiteongreen"],
+            #                     ["#990000", "#FFFFFF", "#000000", 1.4, 0.440, 0.010, 0.542, "redonwhite"],
+            #                     ["#FFFFFF", "#000099", "",        1.3, 0.440, 0.257, 0.542, "whiteonblue"],
+            #                     ["#006600", "#FFFFFF", "#000000", 1.4, 0.440, 0.504, 0.542, "greenonwhite"],
+            #                     ["#FFFFFF", "#990000", "",        1.3, 0.440, 0.752, 0.542, "whiteonred"]]
+
         for black_color, white_color, text_color, contrast, size, xdim, ydim, name in color_parameters:
 
-            # Test if colored file exists either in image directory or 'Style' subdirectory
-            if len(glob.glob(dir_name + "/" + file_name + "/" + file_name + "_" + name + '.*') +
-                   glob.glob(dir_name + "/" + file_name + "/Styles/" + file_name + "_" + name + '.*')) == 0:
-
-                # Rescale contrast
-                contrast_scaled = (contrast - 1.0) * nine_styles_scale + 1
-
-                # Add color to image
-                print("    Generating '" + name + "'")
-                colorised = colorise_image(image_highres, black_color=black_color,
-                                           white_color=white_color, contrast=contrast_scaled)
-
-                # Set city title to black and white
-                if len(text_color) > 0:
-
-                    # Copy bottom of image, convert to greyscale then paste back
-                    box = (0, (height - 1350 - title_nudge), width, height)
-                    region = colorised.crop(box)
-                    region = colorise_image(region, black_color=text_color, white_color=white_color)
-                    colorised.paste(region, box)
-
-                colorised.save(dir_name + "/" + file_name + "/" + file_name + "_styles/" + file_name + "_" + name + ".png",
-                               quality=85, optimize=True)
-
-            else:
-                # If file already exists, load from either image directory or 'Style' subdirectory
-                print("    Loading '" + name + "' from file")
-                colorised = Image.open((glob.glob(dir_name + "/" + file_name + "/" + file_name + "_" + name + '.*') +
-                                        glob.glob(dir_name + "/" + file_name + "/" + file_name + "_styles/" + file_name +
-                                                  "_" + name + '.*'))[0])
+            # Recolor images and save to style directory
+            colorised = custom_color(highres_input=image_highres,
+                                     black_color=black_color,
+                                     white_color=white_color,
+                                     text_color=text_color,
+                                     contrast=contrast,
+                                     title_nudge=title_nudge,
+                                     name=name,
+                                     styles_path=dir_name + "/" + file_name + "/" + file_name + "_styles/")
 
             # Resize color image according to parameters and paste into canvas
             colorised.thumbnail((int(output_canvas.width * size), int(output_canvas.height * size)), Image.ANTIALIAS)
@@ -640,6 +742,10 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
             'shadow': "Produced using 90m digital elevation data from the CGIAR-CSI SRTM 90m Database available "
                            "from http://srtm.csi.cgiar.org.",
 
+            'waterways': "Map created with QGIS using Openstreetmap water line and polygon features. Source data "
+                    "copyright OpenStreetMap contributors available under CC BY-SA "
+                    "(http://www.openstreetmap.org/copyright)",
+
             'waterwayshs': "This map incorporates data from the HydroSHEDS database which is copyright World Wildlife "
                           "Fund, Inc. (2006-2013) and has been used herein under license. WWF has not evaluated the "
                           "data as altered and incorporated within this map, and therefore gives no warranty regarding "
@@ -670,6 +776,10 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
                            "-47f6-ad55-c60f842c550d.html) and licensed under the Open Government Licence - Canada: "
                            "http://open.canada.ca/en/open-government-licence-canada",
 
+            'waterwaysie': "Map created with QGIS using GIS data for streams and waterbodies from INSPIRE Directive "
+                           "Environmental Protection Agency and Northern Ireland Environment Agency data. Data is "
+                           "for public use under Creative Commons CC-By 4.0",
+
             'waterwaysnz': "Map created with QGIS using GIS data for rivers and streams from the New Zealand Topo50, "
                            "Topo250 and Topo500 map series. The Topo50, Topo250 and Topo500 map series provides "
                            "topographic mapping for the New Zealand mainland and Chatham Islands, from 1:50,000 to "
@@ -677,12 +787,17 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
                            "Datasets available under a Creative Commons Attribution 3.0 New Zealand license. Full "
                            "terms at https://creativecommons.org/licenses/by/3.0/nz/.",
 
+            'waterwaysnl': "Map created with QGIS using GIS data for rivers, streams, lakes and canals from the"
+                           "TOP50NL 1:50000 scale mapping product. Freely available online under the CC-BY-4.0 "
+                           "license (https://www.pdok.nl/nl/producten/pdok-downloads/basisregistratie-topografie/topnl/"
+                           "topnl-actueel/top50nl) ",
+
             'waterwaysau': "Map created with open-source QGIS (http://www.qgis.org/en/site/), using a "
-                                   "combination of freely available Commonwealth of Australia (Bureau of Meteorology) "
-                                   "2016 Geofabric river data (http://www.bom.gov.au/water/geofabric/) and GA Geodata "
-                                   "Topo 250K waterbody features (http://www.ga.gov.au/metadata-gateway/metadata/"
-                                   "record/gcat_63999). Data used under a Creative Commons Attribution 4.0 "
-                                   "International Licence. Full terms at https://creativecommons.org/licenses/by/4.0/."}
+                           "combination of freely available Commonwealth of Australia (Bureau of Meteorology) "
+                           "2016 Geofabric river data (http://www.bom.gov.au/water/geofabric/) and GA Geodata "
+                           "Topo 250K waterbody features (http://www.ga.gov.au/metadata-gateway/metadata/"
+                           "record/gcat_63999). Data used under a Creative Commons Attribution 4.0 "
+                           "International Licence. Full terms at https://creativecommons.org/licenses/by/4.0/."}
 
     # If current map not in sheet, add to excel
     if map_name not in rb.sheet_by_index(0).col_values(0):
@@ -751,41 +866,75 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
 
 # Setup ---------------------------------------------------------------------------------------------------------------
 
-image_manipulation(file_string='Europe/hamburg_buildings_highres.png',
-                   map_name='Buildings of Hamburg',
+image_manipulation(file_string='USA/ohio_waterwaysus_highres.png',
+                   map_name='Waterways of Ohio',
                    words_name=1,
                    inset_zoom=0.12,
                    watermark=False,
 
                    # Title
                    name=False,
-                   title_size=1,  # 1.4 for states
-                   title_nudge=0,  # 800 for states
-                   coordinates='30.4583° N, 91.1403° W',
-                   # name_text='',
+                   title_size=1.4,  # 1.4 for states
+                   title_nudge=800,  # 800 for states
+                   # coordinates="31.9038° N, 35.2034° E",
+                   # name_text='YOUR CITY',
 
                    # Styles
                    nine_styles=True,
-                   nine_styles_scale=0.1,  # 0.1, 1.2
-                   blue=False,
+                   nine_styles_scale=1.2,  # 0.1, 1.2
+                   blue=True,
 
                    # Generate PDF?
                    pdf=True)
 
 # Generate tags and title
-map_name = "Every Road in Vancouver"
+map_name = "Shadowlands California"
+file_string="Asia/ramallah_city_highres.png"
 etsy_title(map_name, 1, False)
-etsy_tags(map_name, 1, False)
+# etsy_tags(map_name, 1, False)
+
+# Uses insert_frame to create cover images
+etsy_frame(highres_input=file_string,
+           ouput_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1] + "_cover.jpg",
+           map_name=map_name,
+           nine_styles=False)
 
 # Re-generate PDF
 generate_pdf(map_name)
 
-# Physical maps mockups
-physical_maps(file_string="Canada/vancouver_city_highres.png",
-              map_name=map_name,
-              words_name=1,
-              templates=True)
 
+
+
+# Produce custom color versions
+custom_color(highres_input=file_string,
+             black_color="#9fa2a2",
+             white_color="#FFFFFF",
+             text_color="#000000",
+             contrast=1.3,
+             title_nudge=0,
+             name="greyonwhite",
+             styles_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1] + "_styles/")
+
+
+
+# Physical maps mockups
+for file_string in glob.glob("Canada/*_highres.png"):
+
+    print(file_string)
+
+    try:
+
+        physical_maps(file_string=file_string,
+                      map_name="",
+                      words_name=1,
+                      templates=False)
+    except:
+        print("   Failed")
+
+
+
+
+# Wedding maps
 wedding_map(file_string="Custom/AlexandraJoshua/alexandrajoshua_wedding_highres.png",
             couple_name="ALEXANDRA + JOSHUA",
             couple_size=1.2,
@@ -836,46 +985,3 @@ wedding_map(file_string="Custom/test_buildings_highres3.png",
 # image_cmyk_enhanced.save(file_string[:-12] + "_cmyk.tif",  compression="tiff_deflate")
 #
 # image_highres = Image.open(file_string[:-12] + "_cmyk.tif")
-
-
-
-# Featured on
-inset_test = Image.open("Custom/test_buildings_highres.png")
-
-# Single
-mockup_test = Image.open("Scripts/Elements/mockups/mockup_template_vert.png")
-mockup_test_overlay = mockup_test.copy()
-
-inset_test.thumbnail((1150, 1150), Image.ANTIALIAS)
-mockup_test.paste(inset_test, (668-(inset_test.width / 2), 1240 - inset_test.height), mask=inset_test)
-
-mockup_test.paste(mockup_test_overlay, (0, 0), mask=mockup_test_overlay)
-mockup_test.save("Scripts/Elements/mockups/test.png", quality=85, optimize=True)
-mockup_test.close()
-
-# Double
-
-mockup_test = Image.open("Scripts/Elements/mockups/mockup_sizes_vert.png")
-mockup_test_overlay = mockup_test.copy()
-
-inset_test.thumbnail((1022, 1022), Image.ANTIALIAS)
-mockup_test.paste(inset_test, (668-(inset_test.width / 2), 1240 - inset_test.height), mask=inset_test)
-inset_test.thumbnail((1150, 1150), Image.ANTIALIAS)
-mockup_test.paste(inset_test, (668-(inset_test.width / 2), 1240 - inset_test.height), mask=inset_test)
-
-mockup_test.paste(mockup_test_overlay, (0, 0), mask=mockup_test_overlay)
-mockup_test.save("Scripts/Elements/mockups/test.png", quality=85, optimize=True)
-mockup_test.close()
-
-
-
-
-image_zoom_middle.thumbnail((755, 755), Image.ANTIALIAS)
-featuredon_overlay = Image.open("Scripts/Elements/featuredon_overlay.png")
-image_zoom_middle.paste(featuredon_overlay, (0, 0), mask=featuredon_overlay)
-image_zoom_middle.save(dir_name + "/" + file_name + "/" + file_name + "_featuredon.jpg", quality=85, optimize=True)
-image_zoom_middle.close()
-
-
-
-
