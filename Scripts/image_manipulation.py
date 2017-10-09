@@ -146,9 +146,9 @@ def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True):
 
         # If nine styles, use nine styles frame
         if nine_styles:
-            frame_path="Scripts/Elements/frame_hor_1_v3.png"
+            frame_path="Scripts/Elements/frame_hor.png"
         else:
-            frame_path="Scripts/Elements/frame_hor_1_nostyles.png"
+            frame_path="Scripts/Elements/frame_hor_nostyles.png"
 
 
         cover_image = insert_frame(highres_input=highres_input,
@@ -182,9 +182,9 @@ def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True):
 
         # If nine styles, use nine styles frame
         if nine_styles:
-            frame_path="Scripts/Elements/frame_vert_1_v3.png"
+            frame_path="Scripts/Elements/frame_vert.png"
         else:
-            frame_path="Scripts/Elements/frame_vert_1_nostyles.png"
+            frame_path="Scripts/Elements/frame_vert_nostyles.png"
 
         cover_image = insert_frame(highres_input=highres_input,
                      size=(1150, 1150),
@@ -209,7 +209,7 @@ def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True):
             draw.text(((221 + (620 - line2_width) / 2), 75 + line1_height * 1.35), lines[1], (0, 0, 0), font=font)
 
             # Add overlay to improve spacing if two lines
-            overlay = Image.open("Scripts/Elements/frame_vert_1_v3_overlay.png")
+            overlay = Image.open("Scripts/Elements/frame_vert_overlay.png")
             cover_image.paste(overlay, (0, 0), overlay)
 
 
@@ -233,7 +233,7 @@ def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True):
             except:
 
                 # Add overlay to improve spacing if two lines
-                overlay = Image.open("Scripts/Elements/frame_vert_1_v3_overlay.png")
+                overlay = Image.open("Scripts/Elements/frame_vert_overlay.png")
                 cover_image.paste(overlay, (0, 0), overlay)
 
         # Old style frame
