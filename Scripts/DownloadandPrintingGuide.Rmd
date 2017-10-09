@@ -116,7 +116,7 @@ Once you download, simply take the `r if( multiple ){ "files" } else { "file" }`
 
 Please don't hesitate to **[contact me via Etsy](https://www.etsy.com/au/conversations/new?with_id=85706160)** with any questions about the maps or printing! I also do custom maps for any part of the world, so send me a message if you have something in mind and I'll see what I can do! (depending on the data and time required, custom maps typically cost between $25 to $80 AUD).
 
-Finally, if you like the `r if( length(links_n) > 1 ){ "maps" } else { "map" }` I'd really love it if you could leave me a quick Etsy review (click **["You > Purchases and Reviews"](https://www.etsy.com/au/your/purchases?ref=hdr_user_menu)**). Send me a message if you do and I'll give you **any ready-made map of your choice for free**! I hope the map looks amazing on your wall!
+Finally, if you like the `r if( length(links_n) > 1 ){ "maps" } else { "map" }` I'd really love it if you could leave me a quick Etsy review (click **["You > Purchases and Reviews"](https://www.etsy.com/au/your/purchases?ref=hdr_user_menu)**). It only takes 10 seconds, and every review helps me to improve my store! Thanks again for your order, and I hope the map looks amazing on your wall!
 
 Robbi Bishop-Taylor
 
