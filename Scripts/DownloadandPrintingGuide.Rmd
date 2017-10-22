@@ -1,9 +1,11 @@
 ---
-author: "EarthArtAustralia"
 classoption: a4paper
 documentclass: article
-geometry: margin=1.7cm
-output: pdf_document
+geometry: "left=1.65cm,right=1.65cm,top=2.85cm,bottom=1.65cm"
+output: 
+  pdf_document:
+    includes:
+      in_header: header.tex
 params:
   dropbox_dir: D:/Google Drive/EarthArtAustralia
   name: Every Road in Dallas
@@ -12,7 +14,9 @@ params:
 
 ---
 title: `r params$name`
+
 ---
+
 
 ```{r, include=FALSE}
 
@@ -20,25 +24,22 @@ library(readxl)
 library(dplyr)
 
 # Define paper size function
-paper_size = function(pixels, DPI=300, tolerance=0.95){
+paper_size = function(pixels){
 
   pixels_n = as.numeric(strsplit(pixels, " x ")[[1]])
-  inches = max(pixels_n) / DPI
-  cm = inches * 2.54
+  orientation = c("wide", "tall")[which(pixels_n == max(pixels_n))]
 
-  if (cm > 141.4 * tolerance) {
-    paper_size = paste0("B0 size (1.0 x 1.4 m / 3.3 x 4.6 ft) at ~", DPI,
-                        " DPI (A1 size or above is best to make out all of the smaller features)")
+  if (max(pixels_n) <= 20000) {
+    paper_size = paste0("100 inches or 250 cm ", orientation, " at professional printing quality")
 
-  } else if(cm > 118.9 * tolerance) {
-    paper_size = paste0("A0 size (84 x 119 cm / 33 x 47 in) at ~", DPI,
-                        " DPI (A1 size or above is best to make out all of the smaller features)")
+  } else if(max(pixels_n) > 20000 & max(pixels_n) <= 22000) {
+    paper_size = paste0("110 inches or 275 cm ", orientation, " at professional printing quality")
 
-  } else if(cm > 100.0 * tolerance) {
-    paper_size = paste0("B1 size (71 x 100 cm / 28 x 39 in) at ~", DPI, " DPI (or larger at reduced resolution)")
+  } else if(max(pixels_n) > 22000 & max(pixels_n) <= 25000) {
+    paper_size = paste0("120 inches or 300 cm ", orientation, " at professional printing quality")
 
-  } else if(cm > 84.1 * tolerance) {
-    paper_size = paste0("A1 size (59 x 84 cm	/ 23 x 33 in) at ~", DPI, " DPI (or larger at reduced resolution)")
+  } else if(max(pixels_n) > 25000) {
+    paper_size = paste0("150 inches or 350 cm ", orientation, " at professional printing quality")
 
   } else {
     paper_size = "ERROR" }
@@ -65,7 +66,7 @@ filesize_mb = paste0(round(filesize / 1024 / 1024, 0),"mb")
 
 ```
 
-```{r, out.width = "230px", echo = FALSE, fig.align='center'}
+```{r, out.height = "180px", echo = FALSE, fig.align='center'}
 
 # Identify possible frame directory
 split_path = strsplit(data_sub$file_link, "/")[[1]] 
@@ -90,46 +91,59 @@ if (file.exists(image_link)) {
 
 Thanks for purchasing `r params$name`! Please download the ultra-high resolution `r data_sub$pixels` pixel `r if( multiple ){ "maps" } else { "map" }` using the `r if( multiple ){ "links" } else { "link" }` below:
 
-`r if(!is.na(nchar(links_n[1]))){ paste0("### [>> Click here to download ", version_n[1], " <<](", links_n[1], ")") }`
-`r if(!is.na(nchar(links_n[2]))){ paste0("### [>> Click here to download ", version_n[2], " <<](", links_n[2], ")") }`
-`r if(!is.na(nchar(links_n[3]))){ paste0("### [>> Click here to download ", version_n[3], " <<](", links_n[3], ")") }`
-`r if(!is.na(nchar(links_n[4]))){ paste0("### [>> Click here to download ", version_n[4], " <<](", links_n[4], ")") }`
-`r if(!is.na(nchar(links_n[5]))){ paste0("### [>> Click here to download ", version_n[5], " <<](", links_n[5], ")") }`
-`r if(!is.na(nchar(links_n[6]))){ paste0("### [>> Click here to download ", version_n[6], " <<](", links_n[6], ")") }`
-`r if(!is.na(nchar(links_n[7]))){ paste0("### [>> Click here to download ", version_n[7], " <<](", links_n[7], ")") }`
-`r if(!is.na(nchar(links_n[8]))){ paste0("### [>> Click here to download ", version_n[8], " <<](", links_n[8], ")") }`
+`r if(!is.na(nchar(links_n[1]))){ paste0("### [  >> Click here to download ", version_n[1], " <<](", links_n[1], ")") }`
+`r if(!is.na(nchar(links_n[2]))){ paste0("### [  >> Click here to download ", version_n[2], " <<](", links_n[2], ")") }`
+`r if(!is.na(nchar(links_n[3]))){ paste0("### [  >> Click here to download ", version_n[3], " <<](", links_n[3], ")") }`
+`r if(!is.na(nchar(links_n[4]))){ paste0("### [  >> Click here to download ", version_n[4], " <<](", links_n[4], ")") }`
+`r if(!is.na(nchar(links_n[5]))){ paste0("### [  >> Click here to download ", version_n[5], " <<](", links_n[5], ")") }`
+`r if(!is.na(nchar(links_n[6]))){ paste0("### [  >> Click here to download ", version_n[6], " <<](", links_n[6], ")") }`
+`r if(!is.na(nchar(links_n[7]))){ paste0("### [  >> Click here to download ", version_n[7], " <<](", links_n[7], ")") }`
+`r if(!is.na(nchar(links_n[8]))){ paste0("### [  >> Click here to download ", version_n[8], " <<](", links_n[8], ")") }`
 
 \begingroup\footnotesize
 
-The download links and images may fail to open on mobile or the Microsoft Edge browser. If you run into issues, please try on a desktop computer or send me an Etsy message!
+The download `r if( multiple ){ "links" } else { "link" }` and `r if( multiple ){ "image files" } else { "image file" }` may fail to open on mobile or the Microsoft Edge browser. If you run into problems downloading or opening the `r if( multiple ){ "files" } else { "file" }`, please try on a desktop computer or send me an Etsy message!
 
 \endgroup
 
 ## Printing tips
 
-Once you download, simply take the `r if( multiple ){ "files" } else { "file" }` along to your local print shop on a USB drive to get `r if( multiple ){ "them" } else { "it" }` printed! The `r if( multiple ){ "maps are" } else { "map is" }` suitable for printing out extremely large: up to `r paper_size(pixels = data_sub$pixels, DPI = 300)`. I recommend selecting a heavier, high quality paper (150-250 gsm) for the best printing results!
+Once you download, simply take the `r if( multiple ){ "files" } else { "file" }` along to your local print shop on a USB drive to get `r if( multiple ){ "them" } else { "it" }` printed! The `r if( multiple ){ "maps are" } else { "map is" }` suitable for printing out extremely large: up to `r paper_size(pixels = data_sub$pixels)`. I recommend printing the `r if( multiple ){ "maps" } else { "map" }` as large as you can to make out all the smaller features, and selecting a heavier, high quality paper (150-250 gsm) for the best printing results!
 
-`r if(any(grepl("CMYK", version_n))){ "**Print-optimised CMYK file:** This product also comes with a print-optimised .tif file of the 'Plasma' version of the map in the [CMYK color space](http://sploid.gizmodo.com/the-difference-between-rgb-and-cmyk-explained-1777830600). Even though the file may appear less vibrant than the .png file you also received, printing shops often prefer this format as it typically results in improved printing results. I recommend bringing both Plasma .png and .tif versions along to the printer and see which they prefer!
-" }`
+`r if(any(grepl("CMYK", version_n))){ "**Print-optimised CMYK file**: *This product comes with a print-optimised .tif file of the 'Plasma' version of the map in the [CMYK color space](http://sploid.gizmodo.com/the-difference-between-rgb-and-cmyk-explained-1777830600). Even though the file may appear less vibrant than the .png file you also received, printing shops often prefer this type of image as it can result in improved printing results. If you are planning to print the 'Plasma' version of this map, I recommend bringing both the 'Plasma' .png and .tif versions along to your print shop and see which they prefer!*  \n" }`
 
-## Custom maps + please leave a review! ###
+If you like the `r if( length(links_n) > 1 ){ "maps" } else { "map" }` I'd really appreciate it if you could leave me a quick Etsy review (click **["You" in the top-right of the Etsy website, then "Purchases and Reviews"](https://www.etsy.com/au/your/purchases?ref=hdr_user_menu)**). Every review helps me to improve my store! 
 
-Please don't hesitate to **[contact me via Etsy](https://www.etsy.com/au/conversations/new?with_id=85706160)** with any questions about the maps or printing! I also do custom maps for any part of the world, so send me a message if you have something in mind and I'll see what I can do! (depending on the data and time required, custom maps typically cost between $25 to $80 AUD).
+```{r, out.width = "380px", echo = FALSE, fig.align='center'}
 
-Finally, if you like the `r if( length(links_n) > 1 ){ "maps" } else { "map" }` I'd really love it if you could leave me a quick Etsy review (click **["You > Purchases and Reviews"](https://www.etsy.com/au/your/purchases?ref=hdr_user_menu)**). It only takes 10 seconds, and every review helps me to improve my store! Thanks again for your order, and I hope the map looks amazing on your wall!
+knitr::include_graphics(paste0(params$dropbox_dir, "/Scripts/Elements/reviews.jpg")) 
 
-Robbi Bishop-Taylor
 
-## Follow EarthArtAustralia online!
+```
 
-**[Etsy store](https://www.etsy.com/shop/EarthArtAustralia)   |   [Facebook](https://www.facebook.com/EarthArtAus/)   | [Instagram](https://www.instagram.com/EarthArtAus/)   |   [Pinterest](https://au.pinterest.com/earthartaus/)  **
+
+## Custom maps ###
+
+Looking for something specific but can't find it in my store? I can create custom maps for any part of the world, so send me a message if you have something in mind! Depending on the data and time required, custom maps typically cost between $35 to $100 AUD.
+
+Please don't hesitate to **[contact me via Etsy](https://www.etsy.com/au/conversations/new?with_id=85706160)** with any questions about the maps or printing! Thanks again for your order, and I hope the map looks amazing on your wall!
+
+&nbsp;
+
+Robbi Bishop-Taylor *(Creator, Designer, Owner at [EarthArtAustralia](https://www.etsy.com/shop/EarthArtAustralia))*
+
+**Follow [EarthArtAustralia](https://www.etsy.com/shop/EarthArtAustralia) on [Facebook](https://www.facebook.com/EarthArtAus/), [Instagram](https://www.instagram.com/EarthArtAus/), [Twitter](https://twitter.com/earthartaus/) & [Pinterest!](https://au.pinterest.com/earthartaus/) @earthartaus**
   
 ## About the `r if( length(links_n) > 1 ){ "maps" } else { "map" }`
 `r data_sub$map_desc`
 
-## Copyright
- 
+
+## Permission and copyright
+
 All map prints copyright &copy; 2017 EarthArtAustralia; Robbi Bishop-Taylor. EarthArtAustralia's map prints are for personal use only; please do not redistribute or reproduce artworks commercially.
+
+I, Robbi Bishop-Taylor, confirm that the bearer of this document has purchased this artwork from my store, and has full permission to reproduce it for their personal use.
+
 
 ```{r, out.width = "500px", echo = FALSE, fig.align='center'}
 
@@ -138,4 +152,4 @@ knitr::include_graphics(paste0(params$dropbox_dir, "/Scripts/Elements/thirty_off
 
 ```
 
-[As a thankyou for ordering, use the coupon "THIRTYOFF" at checkout to get 30% off your next EarthArtAustralia order!](https://www.etsy.com/shop/EarthArtAustralia)
+[As a thankyou for ordering, use the coupon "THIRTYOFF" at checkout to get a 30% discount on your next order!](https://www.etsy.com/shop/EarthArtAustralia)
