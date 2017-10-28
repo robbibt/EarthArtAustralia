@@ -106,7 +106,7 @@ def custom_color(highres_input, black_color, white_color, text_color, contrast, 
         region = highres_input.crop(box)
         colorised.paste(region, box)
 
-    colorised.save(styles_path + styles_path.split("/")[1] + "_" + name + ".png", quality=85, optimize=True)
+    colorised.save(styles_path + styles_path.split("/")[1] + "_" + name + ".jpg")
 
     return colorised
 
@@ -127,7 +127,7 @@ def insert_frame(highres_input, size, location, frame_path, ouput_path):
 
     etsy_frame.paste(image_frame, location)
     etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
-    etsy_frame.save(ouput_path)
+    etsy_frame.save(ouput_path, compress_level=1)
 
     return etsy_frame
 
@@ -293,7 +293,8 @@ def etsy_tags(title, words_name, physical=False, copy_clipboard=True):
     suffixes = ["map", "art", "poster", "print", "gift", "wall art", "map print", "map art", "art print"]
 
     if physical:
-        tag_list = "Physical print, " + name + ", " + ", ".join([name + " " + s for s in suffixes]) + country
+        tag_list = "Physical print, " + name + ", " + ", ".join([name + " " + s for s in suffixes]) + country + \
+                   ", Map of " + name + country
     else:
         tag_list = "Printable " + name + ", " + name + ", " + ", ".join([name + " " + s for s in suffixes]) + \
                    ", Map of " + name + country
@@ -343,7 +344,7 @@ def etsy_title(title, words_name, physical=False, copy_clipboard=True):
 
 
 # Physical maps
-def physical_maps(highres_input, output_path, map_name, words_name, templates, copy_clipboard=True):
+def physical_maps(highres_input, output_path, map_name, words_name, offset=True, templates=False, copy_clipboard=True):
 
     # If highres_input is an image, else if a path:
     if type(highres_input) is not Image.Image:
@@ -369,65 +370,74 @@ def physical_maps(highres_input, output_path, map_name, words_name, templates, c
         image_zoom_middle.save(output_path + "_featuredon.jpg", quality=85,
                                optimize=True)
         image_zoom_middle.close()
+        featuredon_overlay.close()
 
     except:
+
         print("Cannot create 'Featured on'")
 
     # Choice of random overlay
     x = str(random.randrange(1,6))
 
+    # Resize image at start to optimise timing
+    size_image = highres_input.copy()
+    size_image.thumbnail((1153, 1153), Image.ANTIALIAS)
+
     # Vertical
     if height > width:
 
         # Main mockup
-        insert_frame(highres_input=highres_input,
+        insert_frame(highres_input=size_image,
                      size=(1153, 1153),
                      location=(668 - (int(1153 / 1.4189) / 2), 1240 - 1153),
                      frame_path="Scripts/Elements/mockups/mockup_template_vert" + x + ".png",
                      ouput_path=output_path + "_mockup.jpg")
 
         # Size frames
-        insert_frame(highres_input=highres_input,
-                     size=(1040, 1040),
-                     location=(440 - (int(1040 / 1.4189) / 2), 1200 - 1040),
-                     frame_path="Scripts/Elements/mockups/mockup_sizes_vert_v2.png",
-                     ouput_path="Scripts/Elements/mockups/draft_overlay.png")
-        insert_frame(highres_input=highres_input,
-                     size=(737, 737),
-                     location=(1155 - (int(737 / 1.4189) / 2), 858 - 737),
-                     frame_path="Scripts/Elements/mockups/draft_overlay.png",
-                     ouput_path="Scripts/Elements/mockups/draft_overlay.png")
-        insert_frame(highres_input=highres_input,
-                     size=(525, 525),
-                     location=(1705 - (int(525 / 1.4189) / 2), 676 - 525),
-                     frame_path="Scripts/Elements/mockups/draft_overlay.png",
-                     ouput_path=output_path + "_sizes.jpg")
+        size_frame = Image.open("Scripts/Elements/mockups/mockup_sizes_vert_v2.png")
+        size_frame_overlay = size_frame.copy()
+
+        # Copy highres_input, and sequentially add to plot
+        size_image.thumbnail((1040, 1040), Image.ANTIALIAS)
+        size_frame.paste(size_image, (440 - (int(1040 / 1.4189) / 2), 1196 - 1040))
+        size_image.thumbnail((746, 746), Image.ANTIALIAS)
+        size_frame.paste(size_image, (1154 - (int(746 / 1.4189) / 2), 859 - 746 + 12 * offset))
+        size_image.thumbnail((525, 525), Image.ANTIALIAS)
+        size_frame.paste(size_image, (1705 - (int(525 / 1.4189) / 2), 679 - 525))
+
+        # Put overlay over the top and save
+        size_frame.paste(size_frame_overlay, (0, 0), size_frame_overlay)
+        size_frame.save(output_path + "_sizes.jpg")
 
     # Horizontal
-    if width > height:
+    else:
 
-        insert_frame(highres_input=highres_input,
+        insert_frame(highres_input=size_image,
                      size=(1153, 1153),
-                     location=(882 - int(1153 / 2), 850 - int(1153 / 1.4189)),
+                     location=(882 - int(1153 / 2), 850 - int(1153 / 1.4189) + 17 * offset),
                      frame_path="Scripts/Elements/mockups/mockup_template_hor" + x + ".png",
                      ouput_path=output_path + "_mockup.jpg")
 
         # Size frames
-        insert_frame(highres_input=highres_input,
-                     size=(1038, 1038),
-                     location=(587 - int(1038 / 2), 757 - int(1038 / 1.4189)),
-                     frame_path="Scripts/Elements/mockups/mockup_sizes_hor_v2.png",
-                     ouput_path="Scripts/Elements/mockups/draft_overlay.png")
-        insert_frame(highres_input=highres_input,
-                     size=(743, 743),
-                     location=(1560 - int(743 / 2), 580 - int(743 / 1.4189)),
-                     frame_path="Scripts/Elements/mockups/draft_overlay.png",
-                     ouput_path="Scripts/Elements/mockups/draft_overlay.png")
-        insert_frame(highres_input=highres_input,
-                     size=(533, 533),
-                     location=(333 - int(533 / 2), 1204 - int(533 / 1.4189)),
-                     frame_path="Scripts/Elements/mockups/draft_overlay.png",
-                     ouput_path=output_path + "_sizes.jpg")
+        size_frame = Image.open("Scripts/Elements/mockups/mockup_sizes_hor_v2.png")
+        size_frame_overlay = size_frame.copy()
+
+        # Sequentially add to plot
+        size_image.thumbnail((1039, 1039), Image.ANTIALIAS)
+        size_frame.paste(size_image, (588 - int(1039 / 2), 758 - int(1039 / 1.4189) + 14 * offset))
+        size_image.thumbnail((749, 749), Image.ANTIALIAS)
+        size_frame.paste(size_image, (1562 - int(749 / 2), 580 - int(749 / 1.4189)))
+        size_image.thumbnail((533, 533), Image.ANTIALIAS)
+        size_frame.paste(size_image, (333 - int(533 / 2), 1204 - int(533 / 1.4189) + 14 * offset))
+
+        # Put overlay over the top and save
+        size_frame.paste(size_frame_overlay, (0, 0), size_frame_overlay)
+        size_frame.save(output_path + "_sizes.jpg")
+
+    # Close images
+    size_image.close()
+    size_frame.close()
+    size_frame_overlay.close()
 
     # Generate template files with Printful safe printing area overlay
     if templates:
@@ -473,7 +483,10 @@ def physical_maps(highres_input, output_path, map_name, words_name, templates, c
         template_small.paste(template_small_overlay, (0, 0), mask=template_small_overlay)
         template_small.thumbnail((1200, 1200))
         template_small.save(output_path + "_template12x18.jpg", quality=20, optimize=True)
+
+        # Close files
         template_small.close()
+        template_image.close()
 
 
 # Add map titles
@@ -555,7 +568,7 @@ def wedding_map(file_string, couple_name, couple_size, couple_nudge, couple_font
 
 
 # Subset image into zooms
-def image_subsets(highres_input, ouput_path, inset_zoom, x_offset, y_offset):
+def image_subsets(highres_input, ouput_path, inset_zoom, x_offset=0, y_offset=0):
 
     # If highres_input is an image, else if a path:
     if type(highres_input) is not Image.Image:
@@ -936,17 +949,17 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
 
 # Setup ---------------------------------------------------------------------------------------------------------------
 
-image_manipulation(file_string="USA/usa_forests_highres.png",
-                   map_name="Forests of the USA",
+image_manipulation(map_name="Forests of Europe",
+                   file_string="Europe/europe_forests_highres.png",
                    words_name=1,
-                   inset_zoom=0.12,
+                   inset_zoom=0.1,
                    watermark=False,
 
                    # Title
                    name=False,
                    title_size=1,  # 1.4 for states
                    title_nudge=0,  # 800 for states
-                   coordinates="35.6895° N, 139.692° E",
+                   coordinates="35.9940° N, 78.8986° W",
                    # name_text='YOUR CITY',
 
                    # Styles
@@ -959,10 +972,10 @@ image_manipulation(file_string="USA/usa_forests_highres.png",
 
 
 # Generate tags and title
-map_name = "Forests of the USA"
-file_string="USA/usa_forests_highres.png"
-etsy_title(map_name, 1, physical=True)
-# etsy_tags(map_name, 2, physical=True)
+map_name = "Every Road in Des Moines"
+file_string="USA/desmoines_city_highres.png"
+etsy_title(map_name, 2, physical=False)
+# etsy_tags(map_name, 1, physical=False)
 
 # Uses insert_frame to create cover images
 etsy_frame(highres_input=file_string,
@@ -978,7 +991,8 @@ physical_maps(highres_input=file_string,
               output_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1],
               map_name="",
               words_name=1,
-              templates=True,
+              offset=False,
+              templates=False,
               copy_clipboard=False)
 
 # Produce custom color versions
@@ -988,15 +1002,15 @@ custom_color(highres_input=file_string,
              text_color="",
              contrast=(1.3 - 1.0) * 0.1 + 1,
              title_nudge=3000,
-             name="greyonnavy",
+             name="greytestonnavy",
              styles_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1] + "_styles/")
 
 # Re-run subsets
 image_subsets(highres_input=file_string,
               ouput_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1],
-              inset_zoom=0.07,
-              x_offset=0.2,
-              y_offset=0.5)
+              inset_zoom=0.1,
+              x_offset=0,
+              y_offset=-0.22)
 
 
 
@@ -1019,12 +1033,12 @@ for file_string in glob.glob("Canada/*_highres.png"):
 
 
 # Wedding maps
-wedding_map(file_string="Custom/sample2_wedding_highres.png",
-            couple_name="JAMES & SARAH",
+wedding_map(file_string="Custom/CoreyMarianna/coreymarianna2_wedding_highres.png",
+            couple_name="Corey & Marianna",
             couple_size=1.25,
             couple_nudge=1030,
             couple_font="Scripts/Fonts/ADAM-CG PRO Kerning.ttf",
-            date_name=" ".join("01.01.2017"),
+            date_name=" ".join("05.11.2017"),
             date_size=0.55,
             date_nudge=47,
             date_font="Scripts/Fonts/Autumn in November.ttf",
@@ -1068,4 +1082,4 @@ wedding_map(file_string="Custom/DelhiKochiAuckland/kochi_custom_highres.png",
 # CMYK conversion -----------------------------------------------------------------------------------------------------
 #
 # image_cmyk = ImageCms.profileToProfile(image_highres,
-#                                         "D:/Dro
+#                                                      
