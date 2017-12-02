@@ -15,7 +15,7 @@ osmfilter osm_test.o5m --keep="highway=primary =primary_link" > osm_test_primary
 osmfilter osm_test.o5m --keep="highway=secondary =secondary_link" > osm_test_secondary.osm
 
 :: All roads
-osmfilter osm_test.o5m --keep="highway=" > osm_test_roads.osm
+osmfilter osm_test.o5m --keep="highway=" > osm_aus1_roads.osm
 
 :: All waterways
 osmfilter osm_test.o5m --keep="( waterway= or natural=water or landuse=reservoir or natural=wetland )" > osm_test_waterways.osm
@@ -23,3 +23,16 @@ osmfilter osm_test.o5m --keep="( waterway=river or waterway=canal or waterway=st
 
 :: No abandoned railways
 osmfilter osm_test.o5m --keep="( railway= and railway!=abandoned )" > osm_test_rail.osm
+
+
+
+
+
+osmconvert australia-latest.osm.pbf -b=110,-50,139,0 -o=osm_test.o5m
+osmfilter osm_test.o5m --keep="highway=" > osm_aus1_roads.osm
+osmconvert australia-latest.osm.pbf -b=139,-50,146,0 -o=osm_test.o5m
+osmfilter osm_test.o5m --keep="highway=" > osm_aus2_roads.osm
+osmconvert australia-latest.osm.pbf -b=146,-50,151,0 -o=osm_test.o5m
+osmfilter osm_test.o5m --keep="highway=" > osm_aus3_roads.osm
+osmconvert australia-latest.osm.pbf -b=151,-50,155,0 -o=osm_test.o5m
+osmfilter osm_test.o5m --keep="highway=" > osm_aus4_roads.osm
