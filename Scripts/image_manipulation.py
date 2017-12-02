@@ -22,6 +22,68 @@ warnings.simplefilter('ignore', Image.DecompressionBombWarning)
 
 # Working directory
 os.chdir("D:/Google Drive/EarthArtAustralia/")
+# os.chdir("C:/Users/Robbi/Google Drive/EarthArtAustralia/")
+
+
+# Map descriptions
+data_source_desc = {'city': "Map based on GIS road data weighted by increasing size/importance. Source data copyright "
+                "OpenStreetMap contributors available under CC BY-SA (http://www.openstreetmap.org/copyright)",
+
+        'roads': "Map based on GIS road data weighted by increasing size/importance. Source data copyright "
+                 "OpenStreetMap contributors available under CC BY-SA (http://www.openstreetmap.org/copyright)",
+
+        'wedding': "Map based on GIS road data weighted by increasing size/importance. Source data copyright "
+                   "OpenStreetMap contributors available under CC BY-SA (http://www.openstreetmap.org/copyright)",
+
+                    'buildings': "Map created with QGIS using GIS building footprint features. Source data copyright "
+                     "OpenStreetMap contributors available under CC BY-SA (http://www.openstreetmap.org/copyright)",
+
+                    'buildingsuk': "Map based on modified OS data Crown copyright and database right (2016), available: "
+                       "https://www.ordnancesurvey.co.uk/business-and-government/products/os-open-map-local.html",
+
+                    'shadow': "Produced using 90m digital elevation data from the CGIAR-CSI SRTM 90m Database available "
+                  "from http://srtm.csi.cgiar.org.",
+
+                    'waterways': "Map created with QGIS using Openstreetmap water line and polygon features. Source data "
+                     "copyright OpenStreetMap contributors available under CC BY-SA "
+                     "(http://www.openstreetmap.org/copyright)",
+
+                    'waterwayshs': "This map incorporates data from the HydroSHEDS database which is copyright World Wildlife "
+                       "Fund, Inc. (2006-2013). The HydroSHEDS database and more information are available at "
+                       "http://www.hydrosheds.org.",
+
+                    'waterwaysus': "Map based on GIS stream and waterbody data from USGS National Hydrography Dataset vector "
+                       "datasets (USGS, 2007-2014, National Hydrography Dataset available at http://nhd.usgs.gov)",
+
+                    'waterwayseu': "GIS data from European Environment Agency (EEA). 2012. EEA Catchments and Rivers Network "
+                       "System (ECRINS) v1.1. Freely available from http://www.eea.europa.eu/data-and-maps/data/"
+                       "european-catchments-and-riversnetwork",
+
+                    'waterwaysca': "GIS data from freely available Government of Canada, NRC, ESS. 2016. CanVec Hydro "
+                       "Features. Ottawa, ON: DNRC (http://open.canada.ca/data/en/dataset/9d96e8c9-22fe-4ad2-b5e8-"
+                       "94a6991b744b), Open Government Licence - Canada: http://open.canada.ca/en/open-government-"
+                                   "licence-canada",
+
+                    'waterwaysie': "Map created with QGIS using GIS data for streams and waterbodies from INSPIRE Directive "
+                       "Environmental Protection Agency and Northern Ireland Environment Agency data. Data is "
+                       "for public use under Creative Commons CC-By 4.0",
+
+                    'waterwaysnz': "GIS data from New Zealand Topo50, Topo250 and Topo500 map series (see www.linz.govt.nz/"
+                       "topography/topo-maps/), freely available under a Creative Commons Attribution 3.0 New "
+                       "Zealand license: https://creativecommons.org/licenses/by/3.0/nz/",
+
+                    'waterwaysnl': "GIS data from the TOP50NL 1:50000 scale mapping product, freely available online under the "
+                       "CC-BY-4.0 license (https://www.pdok.nl/nl/producten/pdok-downloads/basisregistratie-"
+                       "topografie/topnl/topnl-actueel/top50nl)",
+
+                    'waterwaysau': "GIS data from freely available Commonwealth of Australia (BOM) 2016 "
+                       "Geofabric river data (http://www.bom.gov.au/water/geofabric/) and GA Geodata Topo 250K "
+                       "(http://www.ga.gov.au/metadata-gateway/metadata/record/gcat_63999), CC BY 4.0 Licence: "
+                       "https://creativecommons.org/licenses/by/4.0/",
+
+                    'forests': "Data from Hansen et al. 2013. High Resolution Global Maps of 21st Century Forest Cover Change. "
+                   "Science 342, p850 (http://earthenginepartners.appspot.com/science-2013-global-forest) and "
+                   "90m DEM data from the CGIAR-CSI SRTM 90m Database (http://srtm.csi.cgiar.org)"}
 
 
 # Get valid google Drive service
@@ -127,13 +189,13 @@ def insert_frame(highres_input, size, location, frame_path, ouput_path):
 
     etsy_frame.paste(image_frame, location)
     etsy_frame.paste(etsy_frame_overlay, (0, 0), etsy_frame_overlay)
-    etsy_frame.save(ouput_path, compress_level=1)
+    etsy_frame.convert("RGB").save(ouput_path, compress_level=1)
 
     return etsy_frame
 
 
 # uses insert_frame to create cover images
-def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True):
+def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True, metric=False):
 
     # If highres_input is an image, else if a path:
     if type(highres_input) is not Image.Image:
@@ -141,28 +203,45 @@ def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True):
 
     # Define image size
     width, height = highres_input.size
+    vertical = width < height
+
+    # Params: vert   9st,  met,  csize,  cx, cy, fsize1, fsize2, fx, fy, name,
+    pars = [[False, True,  False, 1051, 693, 93, 1200, 666, 128, 128, "cover_hor.png"],
+            [False, True,   True, 1051, 693, 93, 1200, 666, 128, 128, "cover_hor_metric.png"],
+            [False, False, False, 1051, 693, 93, 1200, 666, 128, 128, "cover_hor_nostyles.png"],
+            [False, False,  True, 1051, 693, 93, 1200, 666, 128, 128, "cover_hor_nostyles_metric.png"],
+            [True,  True,  False, 1150, 923, 92, 643, 1175, 277, 137, "cover_vert.png"],
+            [True,  True,   True, 1150, 923, 92, 643, 1175, 277, 137, "cover_vert_metric.png"],
+            [True,  False, False, 1150, 923, 92, 643, 1175, 277, 137, "cover_vert_nostyles.png"],
+            [True,  False,  True, 1150, 923, 92, 643, 1175, 277, 137, "cover_vert_nostyles_metric.png"]]
+
+    par = [par for par in pars if par[0] == vertical and par[1] == nine_styles and par[2] == metric][0]
+    csize, cx, cy, fsize1, fsize2, fx, fy, name = par[3:]
+
+    # New covers
+    cover_image = insert_frame(highres_input=highres_input,
+                               size=(csize, csize),
+                               location=(cx, cy),
+                               frame_path="Scripts/Elements/" + name,
+                               ouput_path=ouput_path + "_cover.jpg")
+
+    # Old style frames
+    frame_or = {True: "vert", False: "hor"}
+    insert_frame(highres_input=highres_input,
+                 size=(fsize1, fsize2),
+                 location=(fx, fy),
+                 frame_path="Scripts/Elements/frame_" + frame_or[vertical] + "_" + str(random.randint(1, 3)) + ".png",
+                 ouput_path=ouput_path + "_frame.jpg")
 
     # Horizontal frames
     if width > height:
 
-        # If nine styles, use nine styles frame
-        if nine_styles:
-            frame_path="Scripts/Elements/frame_hor.png"
-        else:
-            frame_path="Scripts/Elements/frame_hor_nostyles.png"
-
-        cover_image = insert_frame(highres_input=highres_input,
-                                   size=(1051, 1051),
-                                   location=(693, 93),
-                                   frame_path=frame_path,
-                                   ouput_path=ouput_path + "_cover.jpg")
-
         # Set up layer for drawing
         draw = ImageDraw.Draw(cover_image)
-        lines = textwrap.wrap(map_name, width=13)
+        lines = textwrap.wrap(map_name, width=14)
 
         # Set up fonts
-        font = ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO Kerning.ttf", 130)
+        font = ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", 125)
 
         # Add name to cover plot
         line1_width, line1_height = draw.textsize(lines[0], font=font)
@@ -170,81 +249,46 @@ def etsy_frame(highres_input, ouput_path, map_name, nine_styles=True):
         draw.text(((680 + (1075 - line1_width) / 2), 985), lines[0], (0, 0, 0), font=font)
         draw.text(((680 + (1075 - line2_width) / 2), 985 + line1_height * 1.3), lines[1], (0, 0, 0), font=font)
 
-        # Old style frame
-        insert_frame(highres_input=highres_input,
-                     size=(1200, 666),
-                     location=(128, 128),
-                     frame_path="Scripts/Elements/frame_hor_" + str(random.randint(1, 3)) + ".png",
-                     ouput_path=ouput_path + "_frame.jpg")
-
     # Vertical frames
     else:
 
-        # If nine styles, use nine styles frame
-        if nine_styles:
-            frame_path="Scripts/Elements/frame_vert.png"
-        else:
-            frame_path="Scripts/Elements/frame_vert_nostyles.png"
-
-        cover_image = insert_frame(highres_input=highres_input,
-                                   size=(1150, 1150),
-                                   location=(923, 92),
-                                   frame_path=frame_path,
-                                   ouput_path=ouput_path + "_cover.jpg")
-
         # Set up layer for drawing
         draw = ImageDraw.Draw(cover_image)
-        lines = textwrap.wrap(map_name, width=11)
+        lines = textwrap.wrap(map_name, width=13)
 
-        # Set up fonts
-        font = ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", 95)
+        y_loc = 0
+        line_height = 0
+        for line in lines:
 
-        # If two lines, add name to image
-        if len(lines) < 3:
+            # Add last line y location to total so that each line is plotted below last
+            y_loc += line_height
 
-            # Add name to cover image
-            line1_width, line1_height = draw.textsize(lines[0], font=font)
-            line2_width, line2_height = draw.textsize(lines[1], font=font)
-            draw.text(((221 + (620 - line1_width) / 2), 75), lines[0], (0, 0, 0), font=font)
-            draw.text(((221 + (620 - line2_width) / 2), 75 + line1_height * 1.35), lines[1], (0, 0, 0), font=font)
+            # Use while loop to maximise font size
+            size = 0
+            while (draw.textsize(line, font=ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", size))[0] < 600) and \
+                    (draw.textsize(line, font=ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", size))[1] < 95):
 
-            # Add overlay to improve spacing if two lines
-            overlay = Image.open("Scripts/Elements/frame_vert_overlay.png")
+                # Measure height and width of text using current font size
+                font = ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", size)
+                line_width, line_height = draw.textsize(line, font=font)
+                size = size + 1
+
+            # Plot font at resulting size, centred in frame using last-calculated width and cumulative height (y_loc)
+            spacing_factor = (0.8 / len(lines)) * 3 + 0.28
+            offset_factor = 65 + (len(lines) > 2) * -27
+
+            draw.text(((221 + (620 - line_width) / 2), offset_factor + y_loc * spacing_factor), line, (0, 0, 0),
+                      font=font)
+
+        # Add overlay to improve spacing if name takes less than 160 characters
+        if (y_loc + line_height) < 160:
+
+            frame_met = {True: "_metric", False: ""}
+            overlay = Image.open("Scripts/Elements/cover_vert_overlay" + frame_met[metric] + ".png")
             cover_image.paste(overlay, (0, 0), overlay)
 
-
-        else:
-
-            # Set up fonts
-            font_small = ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", 76)
-            lines_small = textwrap.wrap(map_name, width=13)
-            lines_large = textwrap.wrap(" ".join(lines_small[1:]), width=11)
-
-            # Add name to cover image
-            line1_width, line1_height = draw.textsize(lines_small[0], font=font_small)
-            line2_width, line2_height = draw.textsize(lines_large[0], font=font)
-            draw.text(((221 + (620 - line1_width) / 2), 65), lines_small[0], (0, 0, 0), font=font_small)
-            draw.text(((221 + (620 - line2_width) / 2), 65 + line1_height * 1.28), lines_large[0], (0, 0, 0), font=font)
-
-            try:
-                line3_width, line3_height = draw.textsize(lines_large[1], font=font)
-                draw.text(((221 + (620 - line3_width) / 2), 65 + line1_height * 2.75), lines_large[1], (0, 0, 0), font=font)
-
-            except:
-
-                # Add overlay to improve spacing if two lines
-                overlay = Image.open("Scripts/Elements/frame_vert_overlay.png")
-                cover_image.paste(overlay, (0, 0), overlay)
-
-        # Old style frame
-        insert_frame(highres_input=highres_input,
-                     size=(643, 1175),
-                     location=(277, 137),
-                     frame_path="Scripts/Elements/frame_vert_" + str(random.randint(1, 3)) + ".png",
-                     ouput_path=ouput_path + "_frame.jpg")
-
     # Save to file
-    cover_image.save(ouput_path + "_cover.jpg", optimize=True)
+    cover_image.convert("RGB").save(ouput_path + "_cover.jpg", optimize=True)
 
 
 # Update listings
@@ -359,23 +403,6 @@ def physical_maps(highres_input, output_path, map_name, words_name, offset=True,
         etsy_title(title=map_name, words_name=words_name, physical=True, copy_clipboard=copy_clipboard)
         etsy_tags(title=map_name, words_name=words_name, physical=True, copy_clipboard=copy_clipboard)
 
-    # Featured on
-    try:
-
-        # Featured on
-        image_zoom_middle = Image.open(output_path + "_zoom_1.jpg")
-        image_zoom_middle.thumbnail((755, 755), Image.ANTIALIAS)
-        featuredon_overlay = Image.open("Scripts/Elements/featuredon_overlay.png")
-        image_zoom_middle.paste(featuredon_overlay, (0, 0), mask=featuredon_overlay)
-        image_zoom_middle.save(output_path + "_featuredon.jpg", quality=85,
-                               optimize=True)
-        image_zoom_middle.close()
-        featuredon_overlay.close()
-
-    except:
-
-        print("Cannot create 'Featured on'")
-
     # Choice of random overlay
     x = str(random.randrange(1,6))
 
@@ -398,16 +425,19 @@ def physical_maps(highres_input, output_path, map_name, words_name, offset=True,
         size_frame_overlay = size_frame.copy()
 
         # Copy highres_input, and sequentially add to plot
-        size_image.thumbnail((1040, 1040), Image.ANTIALIAS)
-        size_frame.paste(size_image, (440 - (int(1040 / 1.4189) / 2), 1196 - 1040))
-        size_image.thumbnail((746, 746), Image.ANTIALIAS)
-        size_frame.paste(size_image, (1154 - (int(746 / 1.4189) / 2), 859 - 746 + 12 * offset))
-        size_image.thumbnail((525, 525), Image.ANTIALIAS)
-        size_frame.paste(size_image, (1705 - (int(525 / 1.4189) / 2), 679 - 525))
+        size_1, size_2, size_3 = [1041, 748, 525]
+        xoff_1, xoff_2, xoff_3 = [440, 1155, 1705]
+        yoff_1, yoff_2, yoff_3 = [1196, 859, 679]
+        size_image.thumbnail((size_1, size_1), Image.ANTIALIAS)
+        size_frame.paste(size_image, (xoff_1 - (int(size_1 / 1.4189) / 2), yoff_1 - size_1))
+        size_image.thumbnail((size_2, size_2), Image.ANTIALIAS)
+        size_frame.paste(size_image, (xoff_2 - (int(size_2 / 1.4189) / 2), yoff_2 - size_2 + 12 * offset))
+        size_image.thumbnail((size_3, size_3), Image.ANTIALIAS)
+        size_frame.paste(size_image, (xoff_3 - (int(size_3 / 1.4189) / 2), 679 - size_3))
 
         # Put overlay over the top and save
         size_frame.paste(size_frame_overlay, (0, 0), size_frame_overlay)
-        size_frame.save(output_path + "_sizes.jpg")
+        size_frame.convert("RGB").save(output_path + "_sizes.jpg")
 
     # Horizontal
     else:
@@ -432,7 +462,7 @@ def physical_maps(highres_input, output_path, map_name, words_name, offset=True,
 
         # Put overlay over the top and save
         size_frame.paste(size_frame_overlay, (0, 0), size_frame_overlay)
-        size_frame.save(output_path + "_sizes.jpg")
+        size_frame.convert("RGB").save(output_path + "_sizes.jpg")
 
     # Close images
     size_image.close()
@@ -576,13 +606,14 @@ def image_subsets(highres_input, ouput_path, inset_zoom, x_offset=0, y_offset=0)
 
     # Define image size
     width, height = highres_input.size
+    highres_input = highres_input.convert("RGBA")
 
     # Save middle inset
     image_zoom_middle = highres_input.crop((int(width * 0.500 - max(width, height) * (inset_zoom * 0.5)),
                                             int(height * 0.49 - max(width, height) * (inset_zoom * 0.5)),  # 0.388
                                             int(width * 0.500 + max(width, height) * (inset_zoom * 0.5)),
                                             int(height * 0.49 + max(width, height) * (inset_zoom * 0.5))))
-    image_zoom_middle.save(ouput_path + "_zoom_1.jpg", quality=85, optimize=True)
+    image_zoom_middle.convert("RGB").save(ouput_path + "_zoom_1.jpg", quality=85, optimize=True)
 
     # Save bottom inset
     image_zoom = highres_input.crop((int(width * 0.5 - width * 0.2),
@@ -590,7 +621,7 @@ def image_subsets(highres_input, ouput_path, inset_zoom, x_offset=0, y_offset=0)
                                      int(width * 0.5 + width * 0.2),
                                      int(height)))
     image_zoom.thumbnail((3000, 2500), Image.ANTIALIAS)
-    image_zoom.save(ouput_path + "_zoom_2.jpg", quality=85, optimize=True)
+    image_zoom.convert("RGB").save(ouput_path + "_zoom_2.jpg", quality=85, optimize=True)
 
     # Define start points of zooms including offsets
     x = int(x_offset * inset_zoom * max(width, height))
@@ -603,24 +634,87 @@ def image_subsets(highres_input, ouput_path, inset_zoom, x_offset=0, y_offset=0)
                                          y - int(max(width, height) * (inset_zoom * 0.5)),
                                          x + int(max(width, height) * (inset_zoom * 0.5)),
                                          y + int(max(width, height) * (inset_zoom * 0.5))))
-        image_zoom.save(ouput_path + "_zoom_" + str(zoom + 3) + ".jpg", quality=85, optimize=True)
+        image_zoom.convert("RGB").save(ouput_path + "_zoom_" + str(zoom + 3) + ".jpg", quality=85, optimize=True)
         image_zoom.close()
 
 
 # Generate PDF
 def generate_pdf(map_name):
 
+    createdownload_path = os.getcwd() + '/Scripts/create_download_PDF.R'
+
     try:
-        subprocess.call(['Rscript', 'D:/Google Drive/EarthArtAustralia/Scripts/create_download_PDF.R', map_name],
-                        shell=False)
+        # Run on desktop
+        subprocess.call(['Rscript', createdownload_path, map_name, os.getcwd()], shell=False)
+
+    except WindowsError, e:
+
+        # If file can't be found, try different Rpath
+        if e.errno == 2:
+            # Run on laptop
+            print("Running on laptop")
+            rpath = 'C:/Program Files/R/R-3.3.2/bin/Rscript'
+            subprocess.call([rpath, createdownload_path, map_name, os.getcwd()], shell=True)
+
+        else:
+            # If other error, re-raise exceptiom
+            raise
+
     except:
+        # If all fails
         print("Error generating PDF")
+
+
+# Featured on overlay
+def featured_on(file_string, output_path='USA/usa_forests/usa_forests'):
+
+    # Identify map_desc
+    _, map_desc, _ = os.path.basename(file_string[:-4]).split("_")
+
+    # Featured on
+    try:
+
+        # Featured on
+        image_zoom_middle = Image.open(output_path + "_zoom_1.jpg")
+        image_zoom_middle.thumbnail((755, 755), Image.ANTIALIAS)
+        featuredon_overlay = Image.open("Scripts/Elements/featuredon_overlay.png")
+        image_zoom_middle.paste(featuredon_overlay, (0, 0), mask=featuredon_overlay)
+
+        # Add text
+        desc_text = data_source_desc[map_desc]
+        desc_lines = textwrap.wrap(desc_text, width=100)
+        draw = ImageDraw.Draw(image_zoom_middle)
+        data_source_font = ImageFont.truetype("Scripts/Fonts/Abel-Regular.ttf", 18)
+
+        # Iterate through lines in reverse order, adding to bottom of plot
+        for i, line in enumerate(reversed(desc_lines)):
+
+            line_width, _ = draw.textsize(line, font=data_source_font)
+            draw.text((377 - (line_width / 2), (725 - i * 19)), line, (0, 0, 0), font=data_source_font)
+
+        # Save
+        image_zoom_middle.convert("RGB").save(output_path + "_featuredon.jpg", quality=85, optimize=True)
+
+        # Close files
+        image_zoom_middle.close()
+        featuredon_overlay.close()
+
+    # If file does not exist
+    except IOError as e:
+
+        print(e)
+
+    # Other errors
+    except:
+
+        print("Cannot create 'Featured on'")
 
 
 
 # Entire function -----------------------------------------------------------------------------------------------------
-def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark, name, title_size, title_nudge,
-                       nine_styles, nine_styles_scale, pdf, blue=False, coordinates=False, name_text=False):
+def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark, metric, name, title_size, title_nudge,
+                       nine_styles, nine_styles_scale, pdf, desc=data_source_desc, blue=False, coordinates=False,
+                       name_text=False):
 
     # Generate tags and title
     print("Printable maps:")
@@ -691,12 +785,17 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
     etsy_frame(highres_input=image_highres,
                ouput_path=dir_name + "/" + file_name + "/" + file_name,
                map_name=map_name,
-               nine_styles=nine_styles)
+               nine_styles=nine_styles,
+               metric=metric)
 
     # Subsets ---------------------------------------------------------------------------------------------------------
     image_subsets(highres_input=image_highres,
                   ouput_path=dir_name + "/" + file_name + "/" + file_name,
                   inset_zoom=inset_zoom)
+
+    # Featured on overlay
+    featured_on(file_string,
+                output_path=dir_name + "/" + file_name + "/" + file_name)
 
     # Physical map frames and Featured On -----------------------------------------------------------------------------
     print("Physical maps:")
@@ -729,7 +828,6 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
                                ["#FFFFFF", "#006600", "",        1.3, 0.320, 0.339, 0.088, "whiteongreen"],
                                ["#006600", "#FFFFFF", "#000000", 1.4, 0.320, 0.668, 0.088, "greenonwhite"],
                                ["#FFFFFF", "#000000", "",        1.3, 0.320, 0.010, 0.392, "whiteonblack"],
-                               # ["#FFFFFF", "#000000", "",        1.0, 0.320, 0.339, 0.392, "lowres"],
                                ["#FFFFFF", "#000099", "",        1.3, 0.320, 0.668, 0.392, "whiteonblue"],
                                ["#E9692C", "#FFFFFF", "#000000", 1.3, 0.320, 0.010, 0.695, "orangeonwhite"],
                                ["#FFFFFF", "#990000", "",        1.3, 0.320, 0.339, 0.695, "whiteonred"],
@@ -792,95 +890,6 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
     new_permission = {'value': "", 'type': "anyone", 'role': "reader", 'withLink': True}
     service.permissions().create(fileId=main['files'][0]['id'], body=new_permission).execute()
     service.permissions().create(fileId=styles['files'][0]['id'], body=new_permission).execute()
-
-    # Description
-    desc = {'city': "Map created with QGIS using GIS trail and road data weighted and colored by increasing "
-                          "size/importance (from small walking trails to large highways and motorways). Source data "
-                          "copyright OpenStreetMap contributors available under CC BY-SA "
-                          "(http://www.openstreetmap.org/copyright)",
-
-            'roads': "Map created with QGIS using GIS trail and road data weighted and colored by increasing "
-                     "size/importance (from small walking trails to large highways and motorways). Source data "
-                     "copyright OpenStreetMap contributors available under CC BY-SA "
-                     "(http://www.openstreetmap.org/copyright)",
-
-            'wedding': "Map created with QGIS using GIS trail and road data weighted and colored by increasing "
-                    "size/importance (from small walking trails to large highways and motorways). Source data "
-                    "copyright OpenStreetMap contributors available under CC BY-SA "
-                    "(http://www.openstreetmap.org/copyright)",
-
-            'buildings': "Map created with QGIS using GIS building footprint features. Source data copyright "
-                         "OpenStreetMap contributors available under CC BY-SA (http://www.openstreetmap.org/copyright)",
-
-            'buildingsuk': "Map based on modified OS data Crown copyright and database right (2016), available: "
-                           "https://www.ordnancesurvey.co.uk/business-and-government/products/os-open-map-local.html",
-
-            'shadow': "Produced using 90m digital elevation data from the CGIAR-CSI SRTM 90m Database available "
-                           "from http://srtm.csi.cgiar.org.",
-
-            'waterways': "Map created with QGIS using Openstreetmap water line and polygon features. Source data "
-                    "copyright OpenStreetMap contributors available under CC BY-SA "
-                    "(http://www.openstreetmap.org/copyright)",
-
-            'waterwayshs': "This map incorporates data from the HydroSHEDS database which is copyright World Wildlife "
-                          "Fund, Inc. (2006-2013) and has been used herein under license. WWF has not evaluated the "
-                          "data as altered and incorporated within this map, and therefore gives no warranty regarding "
-                          "its accuracy, completeness, currency or suitability for any particular purpose. Portions of "
-                          "the HydroSHEDS database incorporate data which are the intellectual property rights of USGS "
-                          "(2006-2008), NASA (2000-2005), ESRI (1992-1998), CIAT (2004-2006), UNEP-WCMC (1993), WWF "
-                          "(2004), Commonwealth of Australia (2007), and Her Royal Majesty and the British Crown and "
-                          "are used under license. The HydroSHEDS database and more information are available at "
-                          "http://www.hydrosheds.org.",
-
-            'waterwaysus': "Map created with QGIS using GIS data for streams and waterbodies from 1:100,000 scale "
-                            "USGS National Hydrography Dataset vector datasets (U.S. Geological Survey, 2007-2014, "
-                            "National Hydrography Dataset available on the World Wide Web (http://nhd.usgs.gov), "
-                            "accessed 20 April 2016).",
-
-            'waterwayseu': "Map created with QGIS using spatial vector GIS data from 1:250000 scale European "
-                           "Environment Agency Catchments and Rivers Network System datasets. Rivers are weighted "
-                           "from first order streams (i.e. tiny tributaries or headwaters at the very beginning of a "
-                           "river system) to major rivers into which thousands of smaller streams flow (e.g. the "
-                           "Danube and Volga Rivers). Source dataset: European Environment Agency (EEA). 2012. EEA "
-                           "Catchments and Rivers Network System (ECRINS) v1.1. Available from "
-                           "http://www.eea.europa.eu/data-and-maps/data/european-catchments-and-riversnetwork",
-
-            'waterwaysca': "Map created with QGIS using GIS data for streams and waterbodies from Government of "
-                           "Canada, Natural Resources Canada, Earth Sciences Sector. 2016. Lakes and rivers in "
-                           "Canada CanVec Hydro Features. Ottawa, ON: Department of Natural Resources Canada. "
-                           "Data freely available (http://geogratis.gc.ca/api/en/nrcan-rncan/ess-sst/93b9a6e6-1264"
-                           "-47f6-ad55-c60f842c550d.html) and licensed under the Open Government Licence - Canada: "
-                           "http://open.canada.ca/en/open-government-licence-canada",
-
-            'waterwaysie': "Map created with QGIS using GIS data for streams and waterbodies from INSPIRE Directive "
-                           "Environmental Protection Agency and Northern Ireland Environment Agency data. Data is "
-                           "for public use under Creative Commons CC-By 4.0",
-
-            'waterwaysnz': "Map created with QGIS using GIS data for rivers and streams from the New Zealand Topo50, "
-                           "Topo250 and Topo500 map series. The Topo50, Topo250 and Topo500 map series provides "
-                           "topographic mapping for the New Zealand mainland and Chatham Islands, from 1:50,000 to "
-                           "1:500,000 scale. Further information: www.linz.govt.nz/topography/topo-maps/topo250. "
-                           "Datasets available under a Creative Commons Attribution 3.0 New Zealand license. Full "
-                           "terms at https://creativecommons.org/licenses/by/3.0/nz/.",
-
-            'waterwaysnl': "Map created with QGIS using GIS data for rivers, streams, lakes and canals from the"
-                           "TOP50NL 1:50000 scale mapping product. Freely available online under the CC-BY-4.0 "
-                           "license (https://www.pdok.nl/nl/producten/pdok-downloads/basisregistratie-topografie/topnl/"
-                           "topnl-actueel/top50nl) ",
-
-            'waterwaysau': "Map created with open-source QGIS (http://www.qgis.org/en/site/), using a "
-                           "combination of freely available Commonwealth of Australia (Bureau of Meteorology) "
-                           "2016 Geofabric river data (http://www.bom.gov.au/water/geofabric/) and GA Geodata "
-                           "Topo 250K waterbody features (http://www.ga.gov.au/metadata-gateway/metadata/"
-                           "record/gcat_63999). Data used under a Creative Commons Attribution 4.0 "
-                           "International Licence. Full terms at https://creativecommons.org/licenses/by/4.0/.",
-
-            'forests': "Map created with open-source QGIS (http://www.qgis.org/en/site/), using data from Hansen, M.C.,"
-                       " P.V. Potapov, R. Moore, M. Hancher, S.A. Turubanova, A. Tyukavina, D. Thau, S.V. Stehman, S.J."
-                       " Goetz, T.R. Loveland, A. Kommareddy, A. Egorov, L. Chini, C.O. Justice, and J.R.G. Townshend. "
-                       "2013. High Resolution Global Maps of 21st Century Forest Cover Change. Science 342 (15 "
-                       "November) 850 to 53 (http://earthenginepartners.appspot.com/science-2013-global-forest) and "
-                       "90m digital elevation data from the CGIAR-CSI SRTM 90m Database (http://srtm.csi.cgiar.org)"}
 
     # If current map not in sheet, add to excel
     if map_name not in rb.sheet_by_index(0).col_values(0):
@@ -949,42 +958,47 @@ def image_manipulation(file_string, map_name, words_name, inset_zoom, watermark,
 
 # Setup ---------------------------------------------------------------------------------------------------------------
 
-image_manipulation(map_name="Forests of Europe",
-                   file_string="Europe/europe_forests_highres.png",
+image_manipulation(map_name="Waterways of Massachusetts",
+                   file_string="USA/massachusetts_waterwaysus_highres.png",
                    words_name=1,
                    inset_zoom=0.1,
-                   watermark=False,
+                   watermark=True,
+                   metric=False,
 
                    # Title
                    name=False,
                    title_size=1,  # 1.4 for states
                    title_nudge=0,  # 800 for states
-                   coordinates="35.9940° N, 78.8986° W",
-                   # name_text='YOUR CITY',
+                   coordinates="42.2626° N, 71.8023° W",
+                   # name_text='Jindabyne',
 
                    # Styles
-                   nine_styles=False,
-                   nine_styles_scale=0.1,  # 0.1, 1.2
-                   blue=False,
+                   nine_styles=True,
+                   nine_styles_scale=1.2,  # 0.1, 1.2
+                   blue=True,
 
                    # Generate PDF?
                    pdf=True)
 
 
+
+
 # Generate tags and title
-map_name = "Every Road in Des Moines"
-file_string="USA/desmoines_city_highres.png"
-etsy_title(map_name, 2, physical=False)
-# etsy_tags(map_name, 1, physical=False)
+map_name = "Waterways of Arkansas"
+file_string="USA/arkansas_waterwaysus_highres.png"
+etsy_title(map_name, 1, physical=True)
+# etsy_tags(map_name, 1, physical=True)
 
 # Uses insert_frame to create cover images
 etsy_frame(highres_input=file_string,
            ouput_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1],
            map_name=map_name,
-           nine_styles=True)
+           nine_styles=True,
+           metric=True)
 
-# Re-generate PDF
-generate_pdf(map_name)
+# Featured on overlay
+featured_on(file_string=file_string,
+            output_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1])
 
 # Physical maps mockups
 physical_maps(highres_input=file_string,
@@ -995,22 +1009,29 @@ physical_maps(highres_input=file_string,
               templates=False,
               copy_clipboard=False)
 
-# Produce custom color versions
-custom_color(highres_input=file_string,
-             black_color="#d0c3bc",
-             white_color="#0e142e",
-             text_color="",
-             contrast=(1.3 - 1.0) * 0.1 + 1,
-             title_nudge=3000,
-             name="greytestonnavy",
-             styles_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1] + "_styles/")
-
 # Re-run subsets
 image_subsets(highres_input=file_string,
               ouput_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1],
-              inset_zoom=0.1,
-              x_offset=0,
-              y_offset=-0.22)
+              inset_zoom=0.11,
+              x_offset=-0.3,
+              y_offset=-0.3)
+
+# Re-generate PDF
+generate_pdf(map_name)
+
+
+
+# Produce custom color versions
+custom_color(highres_input=file_string,
+             black_color="#000000",
+             white_color="#FFFFFF",
+             text_color="",
+             contrast=(1.3 - 1.0) * 0.1 + 1,
+             title_nudge=3000,
+             name="blackonwhite",
+             styles_path=file_string[:-12] + "/" + file_string[:-12].split("/")[1] + "_styles/")
+
+
 
 
 
@@ -1031,14 +1052,13 @@ for file_string in glob.glob("Canada/*_highres.png"):
 
 
 
-
 # Wedding maps
-wedding_map(file_string="Custom/CoreyMarianna/coreymarianna2_wedding_highres.png",
-            couple_name="Corey & Marianna",
+wedding_map(file_string="Custom/MatthewAshleigh/matthewashleigh_wedding_highres.png",
+            couple_name="Matthew & Ashleigh",
             couple_size=1.25,
             couple_nudge=1030,
             couple_font="Scripts/Fonts/ADAM-CG PRO Kerning.ttf",
-            date_name=" ".join("05.11.2017"),
+            date_name=" ".join("20.11.2017"),
             date_size=0.55,
             date_nudge=47,
             date_font="Scripts/Fonts/Autumn in November.ttf",
@@ -1082,4 +1102,43 @@ wedding_map(file_string="Custom/DelhiKochiAuckland/kochi_custom_highres.png",
 # CMYK conversion -----------------------------------------------------------------------------------------------------
 #
 # image_cmyk = ImageCms.profileToProfile(image_highres,
-#                                                      
+#                                     
+#
+#
+#    
+
+
+map_name = "Waterways of California"
+lines = textwrap.wrap(map_name, width=13)
+
+# Set up layer for drawing
+image = Image.open("Scripts/Elements/cover_vert.png")
+draw = ImageDraw.Draw(image)
+
+y_loc = 0
+line_height = 0
+for line in lines:
+
+    # Add last line y location to total so that each line is plotted below last
+    y_loc += line_height
+
+    # Use while loop to maximise font size
+    size = 0
+    while (draw.textsize(line, font=ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", size))[0] < 600) and \
+          (draw.textsize(line, font=ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", size))[1] < 95):
+
+        # Measure height and width of text using current font size
+        font = ImageFont.truetype("Scripts/Fonts/ADAM-CG PRO.ttf", size)
+        line_width, line_height = draw.textsize(line, font=font)
+        size = size + 1
+
+    # Plot font at resulting size, centred in frame using last-calculated width and cumulative height (y_loc)
+    spacing_factor = (0.8 / len(lines)) * 3 + 0.28
+    offset_factor = 65 + (len(lines) > 2) * -30
+
+    draw.text(((221 + (620 - line_width) / 2), offset_factor + y_loc * spacing_factor), line, (0, 0, 0), font=font)
+
+
+image.save("test.png")
+
+

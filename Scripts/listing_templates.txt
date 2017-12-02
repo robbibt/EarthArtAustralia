@@ -7,7 +7,7 @@ What truly sets this beautiful map apart is its amazing level of detail: our cit
 This matte, museum-quality poster is printed on durable, archival paper to make a stunning centrepiece to any room!
 
 AT A GLANCE
-• Available in three spectacular sizes: 12 x 18", 18 x 24" or a huge 24 x 36"! 
+• Available in a range of spectacular sizes: from 12 x 18" up to a huge 24 x 36"! 
 • Printed on durable museum quality matte archival paper
 • Made-to-order & shipped within 2-5 business days (3-5 business day shipping to USA, 5-10 days to Canada/EU, 5-20 days to rest of the world)
 
@@ -26,7 +26,7 @@ What truly sets this beautiful map apart is its amazing level of detail: our cit
 This matte, museum-quality poster is printed on durable, archival paper to make a stunning centrepiece to any room!
 
 AT A GLANCE
-• Available in three spectacular sizes: 12 x 18", 18 x 24" or a huge 24 x 36"! 
+• Available in a range of spectacular sizes: from 12 x 18" up to a huge 24 x 36"! 
 • Printed on durable museum quality matte archival paper
 • Made-to-order & shipped within 2-5 business days (3-5 business day shipping to USA, 5-10 days to Canada/EU, 5-20 days to rest of the world)
 
@@ -43,7 +43,7 @@ As featured on The Wall Street Journal, Gizmodo, Mashable and more! [NAME][COUNT
 This beautiful museum-quality minimalist poster map is printed on durable, archival paper to make a stunning centrepiece to any room!
 
 AT A GLANCE
-• Available in three spectacular sizes: 12 x 18", 18 x 24" or a huge 24 x 36"! 
+• Available in a range of spectacular sizes: from 12 x 18" up to a huge 24 x 36"! 
 • Printed on durable museum quality matte archival paper
 • Made-to-order & shipped within 2-5 business days (3-5 business day shipping to USA, 5-10 days to Canada/EU, 5-20 days to rest of the world)
 
@@ -60,7 +60,7 @@ As featured on The Wall Street Journal, Gizmodo, Mashable and more! The beautifu
 Produced using advanced cartographic hillshading algorithms, this matte, museum-quality poster is printed on durable, archival paper to make a stunning centrepiece to any room!
 
 AT A GLANCE
-• Available in three spectacular sizes: 12 x 18", 18 x 24" or a huge 24 x 36"! 
+• Available in a range of spectacular sizes: from 12 x 18" up to a huge 24 x 36"! 
 • Printed on durable museum quality matte archival paper
 • Made-to-order & shipped within 2-5 business days (3-5 business day shipping to USA, 5-10 days to Canada/EU, 5-20 days to rest of the world)
 
@@ -79,7 +79,7 @@ What truly sets this beautiful minimalist map apart is its amazing level of deta
 Produced from incredibly detailed satellite imagery, this matte, museum-quality poster is printed on durable, archival paper to make a stunning centrepiece to any room!
 
 AT A GLANCE
-• Available in a range of spectacular sizes: 12 x 18", 18 x 24" or a huge 24 x 36"! 
+• Available in a range of spectacular sizes: from 12 x 18" up to a huge 24 x 36"! 
 • Printed on durable museum quality matte archival paper
 • Made-to-order & shipped within 2-5 business days (3-5 business day shipping to USA, 5-10 days to Canada/EU, 5-20 days to rest of the world)
 
@@ -199,6 +199,12 @@ Every Road: BW, posterize 9
 Waterways: 35% overlay, white to alpha, posterize 15
 Patches: 3000m trim
 Forests: median ps, soft light hs, posterize 25, 35% overlay, white to alpha
+
+EXTRA SIZES
+30×40 cm / 12x15.7    $35
+50×70 cm / 20×27.5    $55
+61×91 cm / 24×36      $65
+70×100 cm / 27.5×39   $70
 
 
 POSTAGE -----------------------------------------------------

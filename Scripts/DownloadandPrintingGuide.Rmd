@@ -7,8 +7,8 @@ output:
     includes:
       in_header: header.tex
 params:
-  dropbox_dir: D:/Google Drive/EarthArtAustralia
-  name: Every Road in Dallas
+  dropbox_dir: C:/Users/Robbi/Google Drive/EarthArtAustralia
+  name: Every Road in New York
 
 ---
 
@@ -20,8 +20,12 @@ title: `r params$name`
 
 ```{r, include=FALSE}
 
-library(readxl)
-library(dplyr)
+library("readxl", quietly = TRUE)
+library("dplyr", quietly = TRUE)
+
+# params = c()
+# params$dropbox_dir="C:/Users/Robbi/Google Drive/EarthArtAustralia"
+# params$name="Waterways of Queensland"
 
 # Define paper size function
 paper_size = function(pixels){
@@ -70,7 +74,7 @@ filesize_mb = paste0(round(filesize / 1024 / 1024, 0),"mb")
 
 # Identify possible frame directory
 split_path = strsplit(data_sub$file_link, "/")[[1]] 
-image_link = paste0(params$dropbox_dir, "/", split_path[2], "/", 
+image_link = paste0("../", split_path[2], "/", 
                     gsub("_highres.png", "", split_path[3]), "/", 
                     gsub("highres.png", "frame.jpg", split_path[3]))
 
@@ -81,7 +85,7 @@ if (file.exists(image_link)) {
   
   } else {
     
-  knitr::include_graphics(paste0(params$dropbox_dir, data_sub$image_link))
+  knitr::include_graphics(paste0("..", data_sub$image_link))
     
   }
 
@@ -116,11 +120,10 @@ If you like the `r if( length(links_n) > 1 ){ "maps" } else { "map" }` I'd reall
 
 ```{r, out.width = "380px", echo = FALSE, fig.align='center'}
 
-knitr::include_graphics(paste0(params$dropbox_dir, "/Scripts/Elements/reviews.jpg")) 
+knitr::include_graphics("Elements/reviews.jpg")
 
 
 ```
-
 
 ## Custom maps ###
 
@@ -133,7 +136,7 @@ Please don't hesitate to **[contact me via Etsy](https://www.etsy.com/au/convers
 Robbi Bishop-Taylor *(Creator, Designer, Owner at [EarthArtAustralia](https://www.etsy.com/shop/EarthArtAustralia))*
 
 **Follow [EarthArtAustralia](https://www.etsy.com/shop/EarthArtAustralia) on [Facebook](https://www.facebook.com/EarthArtAus/), [Instagram](https://www.instagram.com/EarthArtAus/), [Twitter](https://twitter.com/earthartaus/) & [Pinterest!](https://au.pinterest.com/earthartaus/) @earthartaus**
-  
+
 ## About the `r if( length(links_n) > 1 ){ "maps" } else { "map" }`
 `r data_sub$map_desc`
 
@@ -147,9 +150,10 @@ I, Robbi Bishop-Taylor, confirm that the bearer of this document has purchased t
 
 ```{r, out.width = "500px", echo = FALSE, fig.align='center'}
 
-knitr::include_graphics(paste0(params$dropbox_dir, "/Scripts/Elements/thirty_off.jpg")) 
+knitr::include_graphics("Elements/thirty_off.jpg")
 
 
 ```
 
 [As a thankyou for ordering, use the coupon "THIRTYOFF" at checkout to get a 30% discount on your next order!](https://www.etsy.com/shop/EarthArtAustralia)
+
