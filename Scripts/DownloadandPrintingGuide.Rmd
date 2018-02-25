@@ -151,17 +151,10 @@ I, Robbi Bishop-Taylor, confirm that the bearer of this document has purchased t
 ```{r, out.width = "500px", echo = FALSE, fig.align='center'}
 
 knitr::include_graphics("Elements/thirty_off.jpg")
-<<<<<<< Updated upstream
-=======
 knitr::include_graphics("Elements/modernwildlife.jpg")
->>>>>>> Stashed changes
 
 
 ```
 
-<<<<<<< Updated upstream
-[As a thankyou for ordering, use the coupon "THIRTYOFF" at checkout to get a 30% discount on your next order!](https://www.etsy.com/shop/EarthArtAustralia)
-=======
 [As a thankyou for ordering, use the coupon "THIRTYOFF" at checkout to get a 30% discount on your next EarthArtAustralia order](https://www.etsy.com/shop/EarthArtAustralia?coupon=THIRTYOFF) or [30% off beautiful digital artworks of native animals at ModernWildlife.etsy.com!](https://www.etsy.com/au/shop/ModernWildlife?coupon=THIRTYOFF)
->>>>>>> Stashed changes
 
