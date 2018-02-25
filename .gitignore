@@ -1,0 +1,32 @@
+# Ignore directories
+Africa/
+Asia/
+Australia/
+Canada/
+Custom/
+Donations and costs/
+Download links/
+Europe/
+Global/
+NorthAmerica/
+nppBackup/
+NZ/
+Printful/
+Promotional/
+QGIS layer files/
+QGIS project files/
+SouthAmerica/
+Specials/
+USA/
+
+# Ignore file types
+*.Rhistory
+*.xcf
+*.RData
+*.shp
+*.dbf
+*.prj
+*.shx
+*.idea*
+*.dat
+*.json
